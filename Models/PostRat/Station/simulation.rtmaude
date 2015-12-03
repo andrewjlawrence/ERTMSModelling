@@ -1,0 +1,174 @@
+in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+in oldcontroller.rtmaude .
+in interlocking.rtmaude .
+in train.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+
+--- 1) Tracksegment detection, brake state, was previously after 54 steps.
+--- set controler to trival controller:
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : brake, dist : 2, speed : 54, ac : 1,  ma : 1505, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+} in time <= 53 .)
+
+
+
+
+--- 2) MA 1499, 
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 1, ac : 1,  ma : 1499, tseg : AA , maxspeed : 120 >  } in time <= 38 .)
+
+
+--- train: 749.4959
+
+
+---- the next needs trivial controler!!! stops at dist: 1498.49
+---- with truncation: 1498.4918
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 1, ac : 1,  ma : 1499, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+     } in time <= 78 .)
+
+
+--- further checks rbc/interlocking?
+
+--- run completely through.
+
+
+
+
+
+
+---- maximal overrun: in time 1: 1/30 (2 steps); 1/50: 1/60 only one step, 2.9999  
+
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : brake, dist : 1, speed : 120, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >  } in time < 1/50 .)
+eof .
+
+----full speed overlap: acc state:  new dist 2.000035
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 119, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >  } in time < 1 .)
+
+eof . 
+
+
+----full speed overlap. At 1 with 120. 
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : cons, dist : 1, speed : 120, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >  } in time < 1 .)
+
+--- constant speed: new distance 2. 
+
+eof . 
+
+
+
+; the following extends MA
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 1, ac : 1,  ma : 1499, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+} in time <= 50 .)
+
+eof .
+with controller + rbc , here the same.
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 1, ac : 1,  ma : 1499, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+} in time <= 37 .)
+
+eof .
+
+
+
+
+(rew mte(< train1 : Train | state : brake, dist : 1, speed : 120, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >)  .)
+
+ 
+--- train in brake, speed 120, Entry, gets in 2 steps back to cons.
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : brake, dist : 1, speed : 100, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >  } in time < 1 .)
+
+
+--- in time 1/50, reduces speed by 1/50.
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : brake, dist : 1, speed : 120, ac : 1,  ma : 100000, tseg : Entry , maxspeed : 120 >  } in time < 1 / 50 .)
+
+eof .
+
+*** tracksegment detection (works)
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 1, speed : 1, ac : 1,  ma : 5200, tseg : Entry , maxspeed : 120 >  } in time <= 54 .)
+
+--- time 53: AA - 1458
+--- time 54: AB - 1500.29
+
+eof .
+
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 > 
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+} in time <= 200 .)
+
+
+
+**** Run 2 trains through 
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+} in time <= 200 .)
+
+eof .
+
+*** Check 1 train reaches exit
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 > 
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : Exit  >
+}
+in time <= 20 .)
+
+eof .
+
+  

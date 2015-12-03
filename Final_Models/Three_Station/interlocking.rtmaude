@@ -1,0 +1,157 @@
+********************
+*** Interlocking ***
+********************
+
+(tomod INTERLOCKING is protecting POSRAT-TIME-DOMAIN-WITH-INF . 
+   protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTrack2Bool,
+                               sort Entry{Track,Bool} to EntryTrack2Bool) .
+   protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPoint2Bool,
+                               sort Entry{Point,Bool} to EntryPoint2Bool) .
+   protecting MAP{Point, PointPos} * (sort Map{Point,PointPos} to MapPoint2PointPos,
+                               sort Entry{Point,PointPos} to EntryPoint2PointPos) .
+   protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRouteName2Bool,
+                               sort Entry{RouteName,Bool} to EntryRouteName2Bool) .
+   protecting TOPOLOGY .
+   protecting CONTROLTABLE .
+   protecting MSGS .
+
+   *** The following is the class for an interlocking.
+   *** routeset stores which routes are set.
+   *** pointslocked stores the locked status of the points.
+   *** occ stores which tracks are occupied.
+   *** pointPositions stores the positions of points.
+   class Inter |  routeset : MapRouteName2Bool, pointslocked : MapPoint2Bool,
+                  occ : MapTrack2Bool, pointPositions : MapPoint2PointPos .
+
+   vars MAPTB1 : MapTrack2Bool .
+   vars MAPPB1, MAPPB2, MAPPB3 : MapPoint2Bool .
+   vars MAPPP1, MAPPP2 : MapPoint2PointPos .
+   vars MAPRNB1 : MapRouteName2Bool .
+   vars O, O1, O2 : Oid .
+   vars B1, B2, B3, B4 , B5 : Bool . 
+   var REST : Configuration .
+   var A1,A2 : Track .
+   vars RN1, RN2 : RouteName .
+   var pos : PointPos .
+   var R : Time .
+
+   *** Rules to deal with the transition of time.
+   eq mte(< O : Inter | >) = INF .
+
+   *** The interlocking always acts instantaneously.
+   eq delta( < O : Inter | >, R )  =  < O : Inter | >  .
+
+   *** Rules to deal with the controller setting a route.
+   *** The interlocking receives a route to be set and then
+   *** sets the route if no opposing routes are locked.
+
+   *** Grant route as points not locked and clear tracks .
+   crl  routerequest(RN1)
+       < O : Inter | routeset : MAPRNB1, pointslocked : MAPPB3, occ : MAPTB1,
+                     pointPositions : MAPPP1 >
+       =>
+       < O : Inter | routeset : setRoute(RN1, MAPRNB1), pointPositions : setPoints(RN1, MAPPP1) >
+       setroutes(setRoute(RN1, MAPRNB1)) 
+       if ((not pointsLocked(RN1, MAPPB3)) and checkClear(RN1, MAPTB1)  and
+      	   not (MAPRNB1[RN1] == true)) .
+
+   *** The route can not be set so do nothing.
+   crl  routerequest(RN1)
+       < O : Inter |  routeset : MAPRNB1, occ : MAPTB1, pointslocked : MAPPB3 >
+       =>
+       < O : Inter | >
+       if (not checkClear(RN1, MAPTB1)) or pointsLocked(RN1, MAPPB3) .
+
+   *** The route is already set so do nothing.
+   crl  routerequest(RN1)
+       < O : Inter | routeset : MAPRNB1 >
+       =>
+       < O : Inter | >
+       if (MAPRNB1[RN1] == true) .
+
+   *** Rules to deal with the RBC requesting a proceed on a route.
+   crl proceedrequest(RN1)
+        < O : Inter | routeset : MAPRNB1, pointslocked : MAPPB1  >
+	=>
+	proceedgrant(RN1)
+	< O : Inter | pointslocked : lockPoints(RN1, MAPPB1) , routeset : unsetRoutes((RN1), MAPRNB1) >
+	setroutes(unsetRoutes((RN1), MAPRNB1))
+	if MAPRNB1[RN1] .  
+
+   crl proceedrequest(RN1)
+       < O : Inter | routeset : MAPRNB1 >
+       =>
+       < O : Inter | >
+       if (not MAPRNB1[RN1]) .  
+
+   *** Rules to process a train changing tracks
+   crl tsegtransition(A1,A2)
+       < O : Inter | occ : MAPTB1 >
+       =>
+       < O : Inter | occ : insert(A1, false, insert(A2, true, MAPTB1)) > 
+       if not isReleaseTrack(A2) .
+
+   *** If we enter a release tracksegment release the corresponding points.
+   crl tsegtransition(A1,A2)
+       < O : Inter | occ : MAPTB1, pointslocked : MAPPB1 >
+       =>
+       < O : Inter | occ : insert(A1, false, insert(A2, true, MAPTB1)), pointslocked : releasePoint(A2, MAPPB1) >
+      if isReleaseTrack(A2) .
+  
+   *** Auxillary Functions
+   op checkClear : RouteName MapTrack2Bool -> Bool .
+   op checkClearAux : SetOfTracks MapTrack2Bool -> Bool .
+   ops setPoints : RouteName MapPoint2PointPos -> MapPoint2PointPos .
+   op insertPointsAux : SetOfPoints PointPos MapPoint2PointPos -> MapPoint2PointPos .
+   op insertPoints : SetOfPoints MapPoint2Bool -> MapPoint2Bool .
+   op pointsLocked : RouteName MapPoint2Bool -> Bool .
+   op pointsLockedAux : SetOfPoints MapPoint2Bool -> Bool .
+   op setRoute : RouteName MapRouteName2Bool -> MapRouteName2Bool .
+   op unsetRoutes : SetOfRouteNames MapRouteName2Bool -> MapRouteName2Bool .
+   op lockPoints : RouteName MapPoint2Bool -> MapPoint2Bool .
+   op releasePoint : Track MapPoint2Bool -> MapPoint2Bool .
+  
+   var SETRN1 : SetOfRouteNames .
+   var SETT1 : SetOfTracks .
+   var PN : Point .
+   var SETP1 : SetOfPoints .
+
+   *** Check for a given route if any of its points are locked.
+   eq pointsLocked(RN1, MAPPB1) = pointsLockedAux((normalPts(RN1), reversePts(RN1)), MAPPB1) . 
+   eq pointsLockedAux(empty, MAPPB1) = false .
+   ceq pointsLockedAux((PN, SETP1), MAPPB1) =  true if MAPPB1[PN] == true .
+   ceq pointsLockedAux((PN, SETP1), MAPPB1) =  pointsLockedAux(SETP1, MAPPB1) if not MAPPB1[PN] == true .
+
+   *** We can check whether the track segments within a route are clear
+   eq checkClear(RN1, MAPTB1) = checkClearAux(clearTracks(RN1), MAPTB1) .
+   ceq checkClearAux((A1, SETT1), MAPTB1) = false if MAPTB1[A1] == true .
+   ceq checkClearAux((A1, SETT1), MAPTB1) =  checkClearAux(SETT1, MAPTB1)  if not MAPTB1[A1] == true .
+   eq checkClearAux(empty,MAPTB1) = true .
+
+   *** Set the Points    
+   eq setPoints(RN1,MAPPP1) =
+           insertPointsAux(reversePts(RN1), reverse, insertPointsAux(normalPts(RN1),normal, MAPPP1)) .
+
+   eq insertPointsAux((PN, SETP1), pos, MAPPP1) =
+            insert(PN, pos, insertPointsAux(SETP1, pos, MAPPP1)) .
+   eq insertPointsAux(empty, pos, MAPPP1) = MAPPP1 .
+
+   *** Set/Unset Route
+   eq setRoute(RN1,MAPRNB1) = unsetRoutes(conflictingRoutes(RN1), insert(RN1, true, MAPRNB1)) .
+   eq unsetRoutes(empty, MAPRNB1) = MAPRNB1 .  
+   eq unsetRoutes((RN1,SETRN1), MAPRNB1) = unsetRoutes(SETRN1,insert(RN1, false, MAPRNB1)) .  
+
+   *** Lock points on a given route
+   eq lockPoints(RN1, MAPPB1) = insertPoints(normalPts(RN1), insertPoints(reversePts(RN1), MAPPB1)) .
+
+   eq insertPoints((PN, SETP1), MAPPB1) = insert(PN, true, insertPoints(SETP1, MAPPB1)) .
+   eq insertPoints(empty, MAPPB1) = MAPPB1 .
+
+   *** Release Points
+   eq releasePoint(A1, MAPPB1) = insert( release(A1) , false, MAPPB1) .
+  
+endtom)
+
+(set tick def 1 .)
+
+

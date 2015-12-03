@@ -1,0 +1,76 @@
+
+--- in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+
+---in oldcontroller use:
+---eq routeOrder = (RouteName1A) .
+in oldcontroller.rtmaude .
+in interlocking.rtmaude .
+in train-with-two-ac.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+--- Scenario:
+--- Start with first train on AD,  the second on Entry, no MA yet;
+--- controller will set Route1A for train 2, but nothing else (accordingly modify oldcontroller!)
+
+--- First rewrite:
+--- Trains working correctly: second train requests a route, is allowed on Route1A,
+--- gets movement authority until end of AC. Brakes there.
+--- On board computation accelleration use AC = 1, Physical braking 1.
+--- Result: Train 2 stops at  3248.039 (for MA of 3249)
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (Entry |-> true, AD |-> true), pointslocked : empty >
+  < train1 : Train | state : stop, dist : 3255, speed : 0, ac : 1,  ma : 3255, tseg : AD , maxspeed : 20 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : (RouteName1A) >
+}
+in time <= 116 .)
+
+
+
+--- Scenario: Train driver enters wrong value for computation:
+--- So far, we use that both the accelleration value used for the computation of the braking distance and physical braking distance are the same. 
+--- Now assume the train driver entered AC = 1 for the onboard computation, but the actually braking acceralation is 1/2.
+
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 3255, speed : 0, ac : 1,  ma : 3255, tseg : AD , maxspeed : 120 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1/2,   ma : 1, tseg : Entry , maxspeed : 120 >
+  < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+  < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+in time <= 117 .)
+
+eof .
+
+--- Result: Train overruns, ends up at tracksegment AD, i.e. a clash with train 'resting' there. (Note MA got a MA until 
+
+
+--- Can this happen with both trains moving?
+--- Yes eg in case of a slow and a fast train. The will clash either on AD or later on AF.
+
+
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 3250, speed : 0, ac : 1,  ma : 6499, tseg : AD , maxspeed : 15 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1/2,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : AD >  < train2 : Train |  tseg : AD >
+}
+in time <= 150 .)
+
+
+
+
+

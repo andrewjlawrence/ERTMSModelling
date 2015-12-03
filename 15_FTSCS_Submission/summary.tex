@@ -1,0 +1,38 @@
+\section{Summary and Future Work}
+
+In this paper, we have modelled, validated, and verified a complex
+system of systems of hybrid nature.
+%
+%
+%
+To this end, 
+%
+we presented an analysis of the ERTMS system,
+%
+described its information flow,
+%
+and provided a concise model in Real Time Maude. 
+%
+This model is astonishingly small: it consists of around only 1000
+lines of code. We believe this is due to the advanced concepts,
+especially the object orientated features that Real Time Maude offers.
+%
+Through simulation we have demonstrated that our model exhibits a
+number of expected behaviours.
+%
+Furthermore, by systematic error injection, we have shown that safety
+in ERTMS depends on all its components. 
+%
+This simulation and error injection give us confidence that our model
+is valid.
+%
+Finally, we have presented a number of model checking results that
+indicate that, for small rail yards, complexity of model checking of
+physical safety properties is under control.
+
+It is future work to explore further, more complex rail yards,
+including bi-directional ones. On the practical side we intend to
+extend our modelling with further controller strategies and more
+complex train progression behaviour. On the more theoretical side, we
+plan to investigate completeness and abstraction techniques to reduce
+model-checking time, including finitisation.

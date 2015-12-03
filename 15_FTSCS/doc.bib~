@@ -1,0 +1,194 @@
+@article{JamesMNRST14,
+  author    = {Phillip James and
+               Faron Moller and
+               Hoang Nga Nguyen and
+               Markus Roggenbach and
+               Steve A. Schneider and
+               Helen Treharne},
+  title     = {On modelling and verifying railway interlockings: Tracking train lengths},
+  journal   = {Sci. Comput. Program.},
+  volume    = {96},
+  pages     = {315--336},
+  year      = {2014},
+  url       = {http://dx.doi.org/10.1016/j.scico.2014.04.005},
+  doi       = {10.1016/j.scico.2014.04.005},
+  timestamp = {Thu, 20 Nov 2014 11:16:44 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/scp/JamesMNRST14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{james14c,
+year={2014},
+journal={{Mathematics in Computer Science}},
+volume={8},
+number={1},
+title={{Encapsulating Formal Methods within Domain Specific Languages: A Solution for Verifying Railway Scheme Plans}},
+publisher={Springer},
+author={Phillip James and Markus Roggenbach},
+}
+
+@misc{spec,
+  author={ALCATEL and ALSTOM and ANSALDO SIGNAL and BOMBARDIER and INVENSYS RAIL and SIEMENS},
+  title ={System Requirements Specification, Chapter 2, Basic System Description},
+  note = {SUBSET-026-2},
+  year = {2006},
+}
+
+@incollection{james14,
+year={2014},
+isbn={978-3-319-05031-7},
+booktitle={Software Engineering and Formal Methods},
+series={LNCS 8368},
+doi={10.1007/978-3-319-05032-4_15},
+title={Verification of Scheme Plans Using {CSP||B}},
+url={http://dx.doi.org/10.1007/978-3-319-05032-4_15},
+publisher={Springer International Publishing},
+author={James, Philip and Moller, Faron and Nguyen, HoangNga and Roggenbach, Markus and Schneider, Steve and Treharne, Helen and Trumble, Matthew and Williams, David},
+pages={189-204},
+language={English}
+}
+
+@misc{openETCS,
+   title = {{openETCS}},
+   howpublished = {\url{http://openetcs.org}},
+   note ={Accessed: 2015-08-30},
+   year = {2015},
+}
+
+@incollection{nardone14,
+  title={Dynamic State Machines for Formalizing Railway Control System Specifications},
+  author={Nardone, Roberto and Gentile, Ugo and Peron, Adriano and Benerecetti, Massimo and Vittorini, Valeria and Marrone, Stefano and De Guglielmo, Renato and Mazzocca, Nicola and Velardi, Luigi},
+  booktitle={FTSCS'14},
+  year={2014},
+  publisher={Springer}
+}
+
+@INPROCEEDINGS{chiappini10,
+author={Chiappini, A. and Cimatti, A. and Macchi, L. and Rebollo, O. and Roveri, M. and Susi, A. and Tonetta, S. and Vittorini, B.}, 
+booktitle={SE'10},
+title={Formalization and validation of a subset of the European Train Control System}, 
+publisher = {ACM/IEEE},
+year={2010}, 
+ISSN={0270-5257}, 
+}
+
+@incollection{cimatti12,
+year={2012},
+isbn={978-3-642-31423-0},
+booktitle={CAV'12},
+series={LNCS 7358},
+title={Formal Verification and Validation of {ERTMS} Industrial Railway Train Spacing System},
+url={http://dx.doi.org/10.1007/978-3-642-31424-7_29},
+publisher={Springer},
+author={Cimatti, Alessandro and Corvino, Raffaele and Lazzaro, Armando and Narasamdya, Iman and Rizzo, Tiziana and Roveri, Marco and Sanseviero, Angela and Tchaltsev, Andrei},
+language={English}
+}
+
+@incollection{vu15,
+year={2015},
+booktitle={FTSCS},
+title={Formal Modeling and Verification of Interlocking Systems Featuring Sequential Release},
+publisher={Springer},
+author={Vu, Linh H. and Haxthausen, Anne E. and Peleska, Jan},
+}
+
+@misc{ERTMS,
+   author = {{European Railway Industry}},
+   title = {{ERTMS}},
+   howpublished = {\url{http://www.era.europa.eu/Core-Activities/ERTMS/Pages/home.aspx}},
+   note ={Accessed: 2015-08-30},
+   year = {2015},
+}
+
+@article{sttt14,
+  author    = {Phillip James and
+               Faron Moller and
+               Nguyen Hoang Nga and
+               Markus Roggenbach and
+               Steve A. Schneider and
+               Helen Treharne},
+  title     = {Techniques for modelling and verifying railway interlockings},
+  journal   = {{STTT}},
+  publisher = {Springer},
+  year      = {2014},
+  url       = {http://dx.doi.org/10.1007/s10009-014-0304-7},
+  doi       = {10.1007/s10009-014-0304-7},
+  timestamp = {Wed, 15 Oct 2014 13:45:43 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/sttt/JamesMNRST14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+
+@inproceedings{old,
+booktitle = {{FTSCS}'14 -- Preliminary Proceedings},
+author = 
+   {Andrew Lawrence and Ulrich Berger and Phillip James and Markus Roggenbach and
+    Monika Seisenberger},
+title = {Modelling and Analysing the {E}uropean {R}ail {T}raffic {M}anagement {S}ystem in {R}eal-{T}ime {M}aude},
+year = {2014},
+}
+
+@incollection{olveczky2008real,
+  title={The {Real-T}ime {M}aude tool},
+  author={{\"O}lveczky, Peter Csaba and Meseguer, Jos{\'e}},
+  booktitle={Tools and Algorithms for the Construction and Analysis of Systems},
+  pages={332--336},
+  year={2008},
+  publisher={Springer}
+}
+
+
+@inproceedings{Henzinger2000,
+year={2000},
+booktitle={Verification of Digital and Hybrid Systems},
+title={The Theory of Hybrid Automata},
+publisher={Springer},
+author={Henzinger, ThomasA.},
+}
+
+@article{PO07b,
+  author = { Jos{\'e} Meseguer and Peter Csaba {\"O}lveczky },
+  title = {Semantics and Pragmatics of {Real-Time Maude}},
+  journal = {Higher-Order and Symbolic Computation},
+  year = {2007},
+  volume = {20},
+  pages = {161--196},
+  number = {1-2},
+ }
+
+@INPROCEEDINGS{MC03,
+  author = {Manuel Clavel and Francisco Dur{\'a}n and Steven Eker and Patrick Lincoln and Narciso Mart{\'i}-Oliet and Jos{\'e} Meseguer and Carolyn Talcott},
+  title = {The {M}aude 2.0 System},
+  booktitle = {RTA'03},
+  year = {2003},
+  series = {LNCS 2706},
+  publisher = {Springer}
+}
+
+@INPROCEEDINGS{ES00,
+  author = {Steven Eker and Jos{\'e} Meseguer and Ambarish Sridharanarayanan},
+  title = {The {Maude} {LTL} Model Checker},
+  booktitle = {WRLA'02},
+  year = {2002},
+  series = {ENTCS},
+  publisher = {Elsevier}
+}
+
+
+@INPROCEEDINGS{PO07,
+  author = {Peter Csaba {\"O}lveczky and Stian Thorvaldsen},
+  title = {Formal Modeling and Analysis of the {OGDC} Wireless Sensor Network
+	Algorithm in {Real-Time Maude}},
+  booktitle = {Formal Methods for Open Object-Based Distributed Systems},
+  year = {2007},
+  series = {LNCS 4468},
+  publisher = {Springer}
+}
+
+@Article{PO06,
+  author =       {Peter Csaba {\"O}lveczky and Jos{\'e} Meseguer},
+  title =        {Abstraction and Completeness for {Real-Time Maude}},
+  booktitle = {WRLA '06},
+  journal =      {ENTCS},
+  year =         {2007}, 
+}

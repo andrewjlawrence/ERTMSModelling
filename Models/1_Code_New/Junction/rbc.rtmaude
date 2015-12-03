@@ -1,0 +1,107 @@
+**** This is a model of a radio block processor for the junction example.
+
+(tomod RADIOBLOCKPROCESSOR is protecting NAT-TIME-DOMAIN . 
+  protecting MSGS .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                              sort Entry{Oid,Nat} to EntryON) .
+  protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTB,
+                              sort Entry{Track,Bool} to EntryTB) .
+  protecting MAP{Oid,RouteName} * (sort Map{Oid, RouteName} to MapORN,
+                              sort Entry{Oid, RoutName} to EntryORN) .
+  protecting MAP{RouteName, Bool} * (sort Map{RouteName, Bool} to MapRNB,
+                              sort Entry{RouteName, Bool} to EntryRNB) .
+  protecting SET{Oid} * (sort Set{Oid} to SetO,
+                         sort Elt{Oid} to EltOm) .
+
+  sort RBCState .
+  ops rbcidle ready wait granted :  -> RBCState [ctor] .
+
+  *** The following is a class definition for the radio block processor RBC.
+  *** state is the RBCs state.
+  *** lasttrain is the last train that the RBC has received.
+  *** ma is a mapping from train identifiers to their movement authorities.
+  *** pos is a mapping from train identifiers to their positions on the track. 
+  *** route is a mapping from train identifiers to their routes.
+  *** curreq is a set of train identifiers that have made a movement authority request in the current time interval.
+  *** occ is a map indicating which track segment is occupied.
+  *** trains a set of trains for the current track.
+  *** routeproceed the current route requested.
+  class RBC | state : RBCState, lasttrain : Oid,  ma : MapON, curreq : SetO,  trainpos : MapON, trainroute : MapORN, occ : MapTB, trains : SetO , routeproceed : MapRNB .
+
+  vars N,N1,N2 : Nat .
+  var P : NzNat . 
+  var O : Oid .
+  vars B1,B2 : Bool . 
+  vars T1, T2 : Oid .
+  vars MAP1, MAP2 : MapON .
+  var MAPTB1 : MapTB .
+  vars MAPOR1, MAPOR2 : MapORN .
+  vars MAPRNB1, MAPRNB2 : MapRNB .
+  var SETO1 : SetO .
+  vars EN1,EN2 : EntryON .
+  var REST : Configuration .
+  var RN : RouteName .
+ 
+
+  op emptymapor : -> MapORN .
+  eq emptymapor = empty .
+
+  *** Deprecated 
+  *** The nexttrack operation computes the next track segment for a given position and route.
+  ***  op nexttrack : Nat Nat -> Nat .
+  *** The end of track operation computes the position at the end of track for a given track segment.
+  ***op endoftrack : Nat -> Nat .
+  ***ceq nexttrack(N1,N2) = ((N1 div tseglength) + 1) rem 5  if N2 == 1 .
+  *** ceq nexttrack(N1,N2) = ((N1 div tseglength) + 1) rem 5  if  N2 == 2 and (((N1 div tseglength) + 1) rem 5) < 2 .
+  ***ceq nexttrack(N1,N2) = (((N1 div tseglength) + 1) rem 5) + 2  if  N2 == 2 and 2 <= (((N1 div tseglength) + 1) rem 5) .
+  ***ceq  endoftrack(N) = (((N + 1) * tseglength) monus 1) rem tlength  if N <= 4 .
+  ***ceq  endoftrack(N) = (((N monus 1) * tseglength) monus 1) rem tlength  if 4 < N .
+ 
+
+  *** The following equations deal with the maximal time elapse for RBC objects in each of their states.
+  eq mte(< O : RBC | state : rbcidle >) = 1 .
+  eq mte(< O : RBC | state : ready >) = 0 .
+  eq mte(< O : RBC | state : wait >) = 0 .
+  eq mte(< O : RBC | state : granted >) = 0 .
+
+  *** Rule to deal with the delta operation
+  rl [deltarbc] : delta(< O : RBC | >) => < O : RBC | curreq : empty > .
+  
+  *** Update a trains position
+  rl [rbcreceiveloc] : {pos(T1,N) < O : RBC | trainpos : MAP1  > REST} => {< O : RBC | trainpos : insert(T1,N,MAP1) > REST} .
+
+  *** New code to deal with MA requests and proceed requests.
+  *** If the RBC receives a MA Request and it is in the idle state then it will transition to the ready state
+  rl [rbcreceivereq] : {marequest(T1,N1) < O : RBC | state : rbcidle, trainpos : MAP1 > REST} => {< O : RBC | state : ready, lasttrain : T1, trainpos : insert(T1,N1,MAP1) > REST} .
+ 
+  *** From the ready state the train RBC will either request a route proceed for the route or go to straight to the granted state if the route is already set proceed.
+  crl [rbcrequestproceed] : {< O : RBC | state : ready, trainpos : MAP1, trainroute : MAPOR1 , lasttrain : T1 , curreq : SETO1, routeproceed : MAPRNB1  > REST} => { < O : RBC | state : wait,  curreq : (SETO1,T1)  >  proceedrequest(MAPOR1[T1]) REST } if ( not T1 in SETO1) and (not MAPRNB1[MAPOR1[T1]]) and $hasMapping(MAPOR1,T1) .
+  crl [rbcrequestproceed2] : {< O : RBC | state : ready, trainpos : MAP1, trainroute : MAPOR1, lasttrain : T1 , curreq : SETO1, routeproceed : MAPRNB1 > REST} => { < O : RBC | state : granted,  curreq : (SETO1,T1)  > REST } if ( not T1 in SETO1) and MAPRNB1[MAPOR1[T1]] .
+   crl [rbcrequestproceed3] : {< O : RBC | state : ready, trainpos : MAP1, trainroute : MAPOR1, lasttrain : T1, curreq : SETO1, routeproceed : MAPRNB1 > REST} => { < O : RBC | state : granted, curreq : (SETO1,T1) > REST } if ( not T1 in SETO1) and  MAPRNB1[initialnroute(R1)] and not $hasMapping(MAPOR1,T1) .
+
+   *** Rule to prevent trains from making more than one request per time interval. 
+  crl [repeatrequest] : {< O : RBC | state : ready, lasttrain : T1 , curreq : SETO1  > REST} => {< O : RBC | state : rbcidle > REST} if (T1 in SETO1) . 
+  
+  *** Rules to hand the result of any proceed request.
+  rl [rbcproceeddeny] : {proceeddeny(RN) < O : RBC | state : wait  > REST} => { < O : RBC | state : rbcidle >  REST} .
+  rl [rbcproceedgrant] :  {proceedgrant(RN) < O : RBC | state : wait, routeproceed : MAPRNB1 > REST} => { < O : RBC | state : granted, routeproceed : insert(RN, true, MAPRNB1) > REST} . 
+  
+  *** Grant a movement authority
+  crl [rbcgrantma] : { < O : RBC | state :  granted, routeproceed : MAPRNB1, trainpos : MAP1, trainroute : MAPOR1 , ma : MAP2, occ : MAPTB1,  trains : (T1 , SETO1) >  REST} => { < O : RBC | state : rbcidle , ma : insert(T1,endof(next(gettrack(MAP1[T1],getTRoute(MAPOR1[T1])),getTRoute(MAPOR1[T1]))),MAP2) > magrant(T1,endof(next(gettrack(MAP1[T1],getTRoute(MAPOR1[T1])), getTRoute(MAPOR1[T1])))) REST} if MAPRNB1[MAPOR1[T1]] and not MAPTB1[next(gettrack(MAP1[T1],getTRoute(MAPOR1[T1])),getTRoute(MAPOR1[T1]))] .
+  crl [rbcgrantma2] : { < O : RBC | state :  granted, lasttrain : T1,  routeproceed : MAPRNB1, trainpos : MAP1, trainroute : MAPOR1 , occ : MAPTB1,  trains : (T1 , SETO1) >  REST} => { < O : RBC | state : rbcidle > REST} if MAPRNB1[MAPOR1[T1]] and MAPTB1[next(gettrack(MAP1[T1], getTRoute(MAPOR1[T1])), getTRoute(MAPOR1[T1]))] .
+  crl [rbcgrantmanewtrain] : { < O : RBC | state :  granted, lasttrain : T1,  routeproceed : MAPRNB1, trainpos : MAP1, trainroute : MAPOR1, ma : MAP2, occ : MAPTB1,  trains : (T1 , SETO1) >  REST} => { < O : RBC | state : rbcidle, trainroute : insert(T1,initialnroute(R1),MAPOR1), ma : insert(T1,endof(initialttrack(R1)),MAP2) >  magrant(T1,endof(initialttrack(R1))) enterroute(T1,R1) REST} if (not $hasMapping(MAPOR1,T1)) and (not MAPTB1[initialttrack(R1)]) .
+
+  *** Update track occupation information
+    rl [updateocc] : < O : RBC | > trackocc(MAPTB1) => < O : RBC | occ : MAPTB1 > .
+  
+  *** Update a trains route information after an nroute transition.
+    rl [ntrans] : {nroutetrans3(T1,RN) < O : RBC | trainroute : MAPOR1 > REST} => { < O : RBC | trainroute : insert(T1, RN, MAPOR1) > REST} .
+
+endtom)
+
+
+*** Tests
+
+(trew {< rbc1 : RBC | curreq : empty,lasttrain : train1,ma :(train1 |-> 0, train2 |-> 0),occ :(AA |-> false, AB |-> false, AC |-> false, AD |-> false, AE |->
+    false, BD |-> false, BE |-> false),routeproceed :(RouteName1 |-> true, RouteName2 |-> true, RouteName3 |-> false),state : ready,trainpos :(train1 |-> 0, train2 |-> 0),trainroute : empty,trains :(train1, train2) > } in time <= 1 .)
+***(trew { < rbc1 : RBC | curreq : train1,lasttrain : train1,ma :(train1 |-> 0, train2 |-> 0),occ :(0 |-> false, 1 |-> false, 2 |-> false, 3 |-> false, 4 |-> false, 5 |-> false, 6 |-> false),pos :(train1 |-> 0, train2 |-> 0),route :(train1 |-> 1, train2 |-> 2),routeproceed : 1,state : granted,trains :(train1, train2) >} in time <= 100 .)

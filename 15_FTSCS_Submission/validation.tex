@@ -1,0 +1,176 @@
+\section{Validation Through Simulation and Error Injection}
+\label{sec:validation}
+ Here we give a number of scenarios to illustrate that our modelling
+ is able to capture typical errors that are made when designing ERTMS
+ subsystems. Concerning verification tools, we rely on the model
+ checking capabilities of the Real-Time Maude
+ Tool~\cite{olveczky2008real} to provide the relevant
+ counter-examples. In carrying out the verification, our starting
+ point is that the generic models of the interlocking, RBC and trains
+ are correct. However, we make no assumptions about the correctness of
+ the instantiation of our modelling with concrete \emph{Control
+   Tables}, \emph{Release Tables} and \emph{RBC tables}.
+
+\subsection{Simulation}
+We first demonstrate the behaviour of one train moving through the
+rail yard in Figure~\ref{fig:station} with a start position on track
+\texttt{AA} and a movement authority of 1498. For this we use the
+Real Time Maude \texttt{trew} command to execute our model up to a
+given time bound.
+\begin{lstlisting}
+(trew { 
+  < inter1 : Inter | pointPositions : (P1 |-> normal,
+                                       P2 |-> normal) , ... >
+  < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1, 
+                     ma : 1498, tseg : AA , maxspeed : 60 > }
+in time <= 39 .)
+\end{lstlisting}
+The train accelerates until it begins to brake at
+the distance of 749.72m:
+\begin{lstlisting}
+Result ClockedSystem : { < inter1 : Inter | ...>
+  < train1 : Train | ac : 1, dist : 1499446241/2000000,
+    ma : 1498, maxspeed : 60, speed : 38671/1000, 
+    state : brake, tseg : AA >} in time 38671/1000
+\end{lstlisting}
+A query one time step later shows that a movement authority request is made.
+\begin{lstlisting}
+{marequest(train1,AA) < inter1 : ...> 
+ < train1 : Train | speed : 37671/1000, ... >} in time 39671/1000
+\end{lstlisting}
+Now, the system cannot progress, unless we add an RBC to
+our configuration. 
+%Now the system cannot progress, unless we add an (here trivial) rbc to
+%our configuration. As no follow-up route is set the request is ignored.
+\begin{lstlisting}
+(trew { < inter1 : Inter | ... > < train1 : Train | ... >
+ < rbc1 : RBC | availableRoutes : empty ,
+                designatedRoutes : empty  >} in time <= 78 .)
+\end{lstlisting}
+As no follow-up route is available in the RBC, the train stops at 1497.46m.
+\begin{lstlisting}
+  {< inter1 : Inter | ... > < rbc1 : RBC | ... >
+   < train1 : Train | dist : 1497446241/1000000, ma : 1498,
+     speed : 0, state : stop, tseg : AA >} in time 38671/500
+\end{lstlisting}
+To continue, assume that we start in the configuration where the
+interlocking has set \texttt{RouteName3} and the train has made a
+movement authority request.
+\begin{lstlisting}
+(trew {marequest(train1,AA)
+  < inter1 : Inter | routeset : RouteName3 |-> true,... >
+  < train1 : Train | state : brake, dist : 760, speed : 37,
+    ac : 1, ma : 1498, tseg : AA , maxspeed : 60 >
+  < rbc1 : RBC | availableRoutes : (RouteName3), ...  >
+  } in time <= 17 .)
+\end{lstlisting}
+Below we see that the authority is extended to 6499m, and P2 gets
+locked. Time 17 is when the train crosses to track AB and can
+accelerate to maximum speed.
+\begin{lstlisting}
+{ < inter1 : Inter | occ : (AA |-> false, AB |-> true),
+  pointslocked : P2 |-> true, ... >
+  < rbc1 : RBC | availableRoutes : empty, ... >
+  < train1 : Train | dist : 3001/2, ma : 6499, speed : 52,
+  state : acc,tseg : AB >} in time 17
+\end{lstlisting}
+
+
+
+%% As a second example we assume that we have two trains,
+%% a slow \texttt{train1} at the end of \texttt{Route1A} and fast \texttt{train2} on \texttt{Entry}, both points settings are set to \texttt{normal}.
+%% \begin{lstlisting}
+%% (trew { < inter1 : Inter | ... >
+%%     < train1 : Train | state : stop, dist : 3249, speed : 0,
+%%     ac : 1,  ma : 3249, tseg : AC , maxspeed : 20 >
+%%     < train2 : Train | state : stop, dist : 1, speed : 0,
+%%     ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+%%     < rbc1 : RBC | avaliableRoutes : empty , ... >
+%%     < ctr1 : Controller | counter : 0, routes : routeOrder >
+%% } in time <= 172 .)
+%% \end{lstlisting}
+%% The controler chooses routes in some order, first only \texttt{train1}
+%% can get an authority and then \texttt{train2}, once \texttt{train1}
+%% moved out of the way.
+%% \begin{lstlisting}
+%% ...
+%% \end{lstlisting}
+%% \texttt{Train2} comes to a stillstand on \verb|AC| at position
+%% 3248.039 (just before the end of the granted \texttt{MA} at 3249.) 
+
+\subsection{Error Injection}
+\label{sec:errorInjection}
+%%% Phil
+We now show that our modelling is able to find errors in the design of various ERTMS components.  The following scenarios use our random
+controller and check the safety condition presented in
+Section~\ref{sec:safetycondmodelling}.  Furthermore, we model one slow train (max speed 20m/s) and one
+fast train (max speed 60m/s).
+
+\begin{lstlisting}
+eq initState = {...
+  < train1 : Train | state : stop, dist : 0, speed : 0,
+    ac : 1,  ma : 1, tseg : Entry , maxspeed : 20 >
+  < train2 : Train | state : stop, dist : 0, speed : 0,
+    ac : 1,  ma : 1, tseg : Entry , maxspeed : 60 > ...} .
+\end{lstlisting}
+
+\vspace{1ex}
+\noindent
+{\bf Scenario 1 -- Incorrect Control Tables.} We
+consider a scheme plan where the designer forgets to put track section
+AC into the various interlocking tables in
+Figure~\ref{fig:station}. Model checking highlights that two trains
+may be within 100 meters of each other, with both trains on track AC.
+
+\begin{lstlisting}
+{...< train1 : Train | ac : 1, dist : 3249, ma: 3249,
+      maxspeed : 20, speed : 0, state : stop, tseg : AC >
+    < train2 : Train | ac : 1, dist : 1939979/625, ma : 6499,
+      maxspeed : 60, speed : 60, state : cons, tseg : AC > ...}
+\end{lstlisting}
+
+\vspace{1ex}
+\noindent
+{\bf Scenario 2 -- Incorrect RBC Tables.} We
+consider a scheme plan where the designer incorrectly calculates an EoA
+of $3449$m for route 1A in the RBC tables given in
+Figure~\ref{fig:rbctables}. Model checking highlights that two trains
+may be within 100 meters with \verb|train1| overrunning onto track AD due
+to the incorrect EoA and \verb|train2| approaching on AC.
+
+\begin{lstlisting}
+{...< train1 : Train | ac : 1,dist : 3449,ma : 3449,
+      maxspeed : 20,speed : 0,state : stop,tseg : AD >
+    < train2 : Train | ac : 1,dist : 12433788921/4000000,
+      ma : 6499,maxspeed : 60, speed : 60,state : cons,
+      tseg : AC > ...}
+\end{lstlisting}
+
+\vspace{1ex}
+\noindent
+{\bf Scenario 3 -- Incorrect Train Braking Parameters.}
+The computation of the braking distance for a train is
+based on various parameters, some of which may be incorrectly entered
+by the driver. Hence the train's physical braking distance may differ
+from the computed one. Below we consider a starting scenario where a
+deceleration value of $1$ (hard-coded, for illustration) has been
+incorrectly entered for \verb|train2|, whilst the physical train has a
+deceleration value of $8/10$. The other train has correct parameters.
+\begin{lstlisting}
+{...< train1 : Train | state : stop, dist : 3249, speed : 0,
+      ac : 1, ma : 6499, tseg : AD , maxspeed : 20 >
+    < train2 : Train | state : stop, dist : 1, speed : 0,
+      ac : 8/10, ma : 1, tseg : Entry , maxspeed : 60 > ...}
+\end{lstlisting}
+The incorrect parameter causes the two trains both to be on track
+\verb|AF| within 100 meters of each other. This is due
+to the incorrect behaviour of \verb|train2| which overruns its movement
+authority thanks to its wrong braking parameter.
+\begin{lstlisting}
+{...< train1 : Train | ac : 1,dist : 15662341/2500,ma : 6499,
+      maxspeed : 20,speed : 20,state : cons,tseg : AF >
+    < train2 : Train | ac : 4/5,dist : 968593576867/156250000,
+      ma : 7999,maxspeed : 60,speed : 60,state : cons,
+      tseg: AF > ...}
+  
+\end{lstlisting}

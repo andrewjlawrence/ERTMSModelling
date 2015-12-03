@@ -1,0 +1,70 @@
+For classical railway signalling, we established the following
+finitisation theorem: if a signalling system is collision free for two
+trains, then it is collision free for any number of
+trains \cite{sttt14}. We conjecture that this result carries over to
+ERTMS and consider our ERTMS system to be safe if -- within the scheme
+plan under consideration -- two trains are always more than, say, 40m
+apart. Thus, we check for the invariant ``no collisions'':
+%
+\begin{lstlisting}[columns=fixed]
+   eq { REST  < train1 : Train |  tseg : T1 , dist : N1 >
+              < train2 : Train |  tseg : T2 , dist : N2 > }
+      |= nocrashDistance(train1, train2) 
+   =
+      ( ( not (T1 == Entry) and not (T2 == Entry) and 
+          not (T1 == Exit ) and not (T2 == Exit ) ) 
+      and ( T1 == T2 or 
+            T1 == next(T2, normal) or T1 == next(T2, reverse) or
+            T2 == next(T1, normal) or T2 == next(T1, reverse) ) )
+      implies ((N2 monus N1 > 100) or (N1 monus N2 > 100)) .
+\end{lstlisting}
+%
+I.e., a configuration with two objects \verb|train1| and \verb|train2| of type
+ train models the parameterised formula \verb|nocrashDistance| iff the
+ state of the two trains objects under consideration are in the
+ relation specified after the equal sign. Here, \verb|T1|
+ and \verb|T2| are the tracks and \verb|N1| and
+\verb|N2| are the positions on which the two trains are respectively.
+In the formula we check that the trains are more than 100m apart,
+provided 
+%
+they are not on the \verb|Entry| or \verb|Exit| track, and
+%
+provided they are on the same (\verb|T1 == T2|) or on adjacent tracks.
+
+The second condition is necessary as we model positions from a single
+reference point on the \verb|Entry| track. For instance, on the track
+plan shown in Figure~\ref{fig:station}, we can have one train on track
+\verb|BC| and another train on track \verb|AC|, both with the same
+distance, though by no means colliding with each other.
+%
+We note that we use the value of 100m for our invariant. This is different
+from the desired 40m, but necessary due to our time sampling
+strategy: we sample the system only once every
+second. Within this time, the distance between two trains can reduce
+by maximally 60m as we consider trains that travel at a
+maximum of 60m/s.
+
+%%%%%%% As a suggestion - to see how it looks -- put in a separate subsection.
+\subsection{Completeness}
+An important question is whether our modelling is complete, that is
+all errors can be detected by our
+modelling. \"Olveczky and Meseguer give criteria for
+completeness in object oriented Real-Time Maude~\cite{PO06}. Essentially, one
+needs to prove that the maximal time elapse function is time
+robust. This is clearly the case if we consider movement without
+acceleration. It is almost all the time the case for our modelling
+with acceleration, however the small shifts of the sampling points
+require further analysis. We expect that a weakening of Theorem 4~\cite{PO06}, which takes approximation into account, holds.  A
+necessary premise for this theorem is non-zenoness for which we give
+the following argument.
+
+Our modelling is non-zeno in the sense of Henzinger \cite{Henzinger2000} as
+there are no cycles in the behaviour of the automaton which allow time
+to converge.  The argument is that any cycle will involve the
+accelerating state, which requires a new movement authority to be
+granted that will extend the current movement authority by at least
+one. This causes a minimal time elapse bounded away from zero by a
+fixed amount since the speed of a train is limited.
+
+

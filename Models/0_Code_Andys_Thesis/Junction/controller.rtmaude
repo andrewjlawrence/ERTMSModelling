@@ -1,0 +1,23 @@
+
+(tomod CONTROLLER is protecting NAT-TIME-DOMAIN . 
+  protecting MSGS .
+  protecting DISCRETE-SINGLE-TRAIN .
+  protecting LIST{Oid} * (sort List{Oid} to ListT) .
+  protecting MAP{Oid,Nat} * (sort Map{Oid,Nat} to MapON,
+                              sort Entry{Oid,Nat} to EntryON) .
+  
+  class Controller | trainorder : ListT,  trainmax : MapON , trainroute : MapON .
+
+  vars O1, O2 : Oid .
+  vars LT : ListT .
+  vars MT, MT2 : MapON .
+  var N : Nat .
+
+
+  rl [makereq] : delta(< O2 : Controller |  trainorder : (O1  LT) , trainroute : MT >) => reqjoin(O1, MT[O1]) < O2 : Controller | >  .
+  rl [notrains] : delta(< O2 : Controller |  trainorder : (nil) >) =>  < O2 : Controller | >  .
+  rl grantma(O1,N) < O2 : Controller | trainorder : (O1  LT) , trainmax : MT, trainroute : MT2 >  =>  < O2 : Controller | trainorder : LT  > < O1 : Train | state : acc , ac : 1,  ma : N , speed : 0, dist : 0, maxspeed : MT[O1], tseg : 0, route : MT2[O1]  > trans(0) . 
+
+endtom)
+
+(trew {< ctr1 : Controller | trainorder : (train2),  trainmax : (train1 |-> 5, train2 |-> 3), trainroute : (train1 |-> 1, train2 |-> 2) >} in time <= 1 .)

@@ -1,0 +1,65 @@
+(tomod TOPOLOGY is protecting NAT-TIME-DOMAIN . 
+
+sort TRoute .
+ops  TRoute1A, TRoute1B, TRoute2, TRoute3, TRoute4 : -> TRoute .
+
+sort Track .
+ops AA AB AC AD AE AF Exit : -> Track .
+ops BC BD Nulltrack : -> Track .
+
+sort Point .
+ops P1 P2 : -> Point . 
+
+sort PointPos .
+
+ops normal reverse : -> PointPos .
+var PPos : PointPos .
+
+op next : Track PointPos -> Track . 
+eq next(AA,PPos) = AB .
+eq next(AB,normal) = AC .
+eq next(AB,reverse) = BC .
+eq next(BC,PPos) = BD .
+eq next(AC,PPos) = AD .
+eq next(AD,normal) = AE .
+eq next(AD,reverse) = Nulltrack .
+eq next(AE,PPos) = AF .
+eq next(AE,PPos) = AF .
+eq next(BD,reverse) = AE .
+eq next(BD,normal) = Nulltrack .
+eq next(AF,PPos) = Exit .
+
+op TrackToPoint : Track -> Point .
+eq TrackToPoint(AB) = P1 .
+eq TrackToPoint(AE) = P2 .
+
+
+op endof : Track -> Nat .
+eq endof(AA) = 1499 .
+eq endof(AB) = 1749 .
+eq endof(AC) = 3249 .
+eq endof(BC) = 3249 .
+eq endof(AD) = 4749 .
+eq endof(BD) = 4749 .
+eq endof(AE) = 4999 .
+eq endof(AF) = 6499 .
+eq endof(Exit) = 7999 .
+
+
+--- train: is my pos...
+
+op endofTRoute : TRoute -> Track .
+eq endofTRoute(TRoute1A) =  AC .
+eq endofTRoute(TRoute1B) = BC .
+eq endofTRoute(TRoute2) = AF .
+eq endofTRoute(TRoute3) = AF .
+eq endofTRoute(TRoute4) = Exit .
+
+
+--- to go to rbc file
+--- sort RouteName .
+--- ops  RouteName1A RouteName1B RouteName2 RouteName3 RouteName4 : -> RouteName .
+
+endtom)
+
+(rew next(AA,PPos) .)

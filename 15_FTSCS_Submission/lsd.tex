@@ -1,0 +1,36 @@
+%Utilising our domain specific language, see, e.g., \cite{james14}, 
+We model the rail topology as a connected collection of tracks,
+points, and routes and provide a systematic translation into
+Maude. For the example given in Figure~\ref{fig:station}, the location
+specific data Maude is encoded as follows:
+%
+\begin{lstlisting}[columns=fixed]
+sort RouteName . ops RouteName1A ... : -> RouteName .
+sort Track .     ops AA AB AC ... : -> Track        .
+sort Point .     ops P1 P2 : -> Point               . 
+\end{lstlisting}
+%
+The connection between tracks is given by a \verb|next| function. If
+the track under discussion is a point, as, e.g., track \verb|AB|, it
+has two potential successors, namely \verb|AC| and
+\verb|BC|, depending on the current setting of the point.
+%
+\begin{lstlisting}[columns=fixed]
+op next : Track PointPos -> Track . var PPos : PointPos .
+eq next(AA,PPos) = AB                                   .
+eq next(AB,normal) = AC . eq next(AB,reverse) = BC      .
+\end{lstlisting}
+
+The various tables (clear and release tables for the scheme plan, the
+tables of the RBC) are encoded by defining a function for each
+column. A typical example is the ``Clear Tracks''
+column\footnote{Compared to the given control table, we add {\tt
+RouteName4} to cover the exit track.} of the control table in
+Figure \ref{fig:station}:
+%
+\begin{lstlisting}[columns=fixed]
+op clearTracks : RouteName -> SetOfTracks  .
+eq clearTracks(RouteName1A) = (AA, AB, AC) . 
+...
+eq clearTracks(RouteName4)  = empty        .
+\end{lstlisting}

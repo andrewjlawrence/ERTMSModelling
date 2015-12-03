@@ -1,0 +1,42 @@
+
+(tomod CONTROLLER is protecting NAT-TIME-DOMAIN .
+  protecting NAT .
+  protecting MSGS .
+  protecting CONTROLTABLE .
+  protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                               sort Elt{RouteName} to EltNRoutes ) .
+  
+  class Controller | counter : Nat . ***, routes : SetOfRouteNames .
+  
+  vars O1, O2 : Oid .
+  var RN : RouteName .
+  var SETRN1 : SetOfRouteNames .
+  var N : Nat .
+
+  *** Request routes in following order
+  op routeOrder : -> SetOfRouteNames .
+  eq routeOrder = (RouteName1A, RouteName1B, RouteName2, RouteName3, RouteName4) .
+
+  *** eq mte(< O1 : Controller | >) = 1 .
+
+  *** counter has reached 0 so reset and request next route
+  eq delta(< O2 : Controller | counter : 0 > ) 
+     =
+     routeset(randomRoute) < O2 : Controller | counter : 10 > .
+
+  *** Change counter without request
+  ceq delta(< O2 : Controller | counter : N   >)
+     =
+     < O2 : Controller | counter : (N monus 1) >
+     if not N == 0 .
+
+  *** The following equations do not work for random choice
+  *** when re-writing, maybe it will for model checking.
+  op randomRoute : -> RouteName .
+  eq randomRoute = RouteName1A .
+  eq randomRoute = RouteName1B .
+***  eq randomRoute = RouteName2 .
+  eq randomRoute = RouteName3 .
+  eq randomRoute = RouteName4 .
+  
+endtom)

@@ -1,0 +1,61 @@
+changes:
+--------
+change to: POSRAT-TIME-DOMAIN-WITH-INF
+
+Rtopology.rtmaude
+RControltable.rtmaude
+
+Rmsgs.rtmaude: contains tick rule and msgs info.
+================================================
+
+
+deleted:
+*** TODO: Replace with quo
+
+    op _div_ : Nat NzNat -> Nat .         
+    ceq N div P = 0 if P > N .
+    ceq N div P = s((N monus P) div P) if P <= N .  
+
+
+
+
+
+
+  *** tick rule:
+    var R : Time .
+
+    crl [tick] : {CURRENT} => {delta(CURRENT,R)} in time R if R <= mte(CURRENT) [nonexec] .
+
+
+
+--- !!!should be always changing to equations!
+    *** delta (note: more defs for objects in subsequent files)
+ 
+    op delta : Configuration Time -> Configuration [frozen (1)]  .
+    eq delta(none, R) = none .
+    eq delta(CON1 CON2, R) = delta(CON1,R) delta(CON2,R) .
+
+
+
+--- put these somewhere else? 
+  ops train1 train2 train3 inter1 rbc1 ctr1 : -> Oid [ctor] .
+
+
+Rinterlocking.rtmaude
+=====================
+
+ *** The interlocking always acts instantaneously.
+   delta( < O : Inter | > , R )  =  < O : Inter | >  .
+
+--- First sanity test:
+--- Later: justify value of 1, possibly also put into later file.
+
+(set tick def 1 .)  
+
+(trew { < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty > }
+  in time < 10 .)
+
+--- reduces in time 9.
+
+
+

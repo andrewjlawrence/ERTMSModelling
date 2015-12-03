@@ -1,0 +1,73 @@
+
+--- in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+
+---in oldcontroller use:
+---eq routeOrder = (RouteName1A) .
+in oldcontroller.rtmaude .
+in interlocking.rtmaude .
+in train-with-two-ac.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (Entry |-> true, AC |-> true), pointslocked : P1 |-> true >
+  < train1 : Train | state : stop, dist : 3249, speed : 0, ac : 1,  ma : 3249, tseg : AC , maxspeed : 20 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+in time <= 172 .)
+
+
+
+
+***(
+Please copy here result:
+
+
+
+train2 can only traveled to AC where it had to stop. , RouteName3 is not (yet)available.
+)
+--- only at time 250 the train will get its Ma extended.
+
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (Entry |-> true, AC |-> true), pointslocked : P1 |-> true >
+  < train1 : Train | state : stop, dist : 3249, speed : 0, ac : 1,  ma : 3249, tseg : AC , maxspeed : 20 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 9/10,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+in time <= 160  .)
+***(
+Please copy here result:
+
+
+
+
+)
+
+--- train2 moved to AD, i.e. a new route, in the previous step, and the MA erquest gets  a MA upto 7999.
+
+--- both on the same tracksegment?
+
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 3250, speed : 0, ac : 1,  ma : 6499, tseg : AD , maxspeed : 15 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 9/10,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : AF >  < train2 : Train |  tseg : AF >
+}
+in time <= 200 .)
+
+
+
+
+

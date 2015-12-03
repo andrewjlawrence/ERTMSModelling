@@ -1,0 +1,49 @@
+******************************
+*** Round Robin Controller ***
+******************************
+
+(tomod CONTROLLER is protecting POSRAT-TIME-DOMAIN-WITH-INF . 
+  protecting MSGS .
+  protecting CONTROLTABLE .
+  
+  class Controller | counter : NNegRat, routes : RouteList .
+ 
+  sort RouteList .
+   
+  op emptyRouteList : -> RouteList .
+  op _:_ : RouteName RouteList -> RouteList .
+  
+  op requestTime : -> NNegRat .
+  eq requestTime = 30 .
+
+  vars O1, O2 : Oid .
+  var RN : RouteName .
+  var SETRN1 : RouteList .
+  var N : NNegRat .
+  var R : Time .
+
+  *** Request routes in following order
+  op routeOrder : -> RouteList .
+  eq routeOrder = (RouteName1A : RouteName1B : RouteName2 :
+                   RouteName3 : RouteName4 : emptyRouteList) .
+
+  eq mte(< O1 : Controller | >) = INF .
+
+  *** counter has reached 0 so reset and request next route
+  ceq delta(< O2 : Controller | counter : N , routes : (RN : SETRN1) > , R )
+     =
+     routerequest(RN)
+     < O2 : Controller | counter : (requestTime monus (R monus N)) , routes : (SETRN1) >  
+     if (N < R) .
+     
+  *** Replenish routes
+  eq delta(< O2 : Controller | counter : N , routes : emptyRouteList > , R)
+     =
+      delta(< O2 : Controller | counter : N , routes : routeOrder > , R) .
+
+  *** Change counter without request
+  ceq delta(< O2 : Controller | counter : N   > , R)
+     =
+     < O2 : Controller | counter : (N monus R) >
+     if not (N < R) .
+endtom)

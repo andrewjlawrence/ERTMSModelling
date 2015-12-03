@@ -1,0 +1,64 @@
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view RouteName from TRIV to TOPOLOGY is
+      sort Elt to RouteName .
+endv)
+
+(view PointPos from TRIV to TOPOLOGY is
+      sort Elt to PointPos .
+endv)
+
+*** Seperate types and equations.
+(tomod CONTROLTABLE is protecting POSRAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                                    sort Elt{RouteName} to EltRouteName) .
+      
+
+       op clearTracks : RouteName -> SetOfTracks .
+       op normalPts : RouteName -> SetOfPoints .
+       op reversePts : RouteName -> SetOfPoints .
+       op isReleaseTrack : Track -> Bool .
+       op release : Track -> Point .
+       
+       *** is this needed?
+       op conflictingRoutes : RouteName -> RouteName .
+
+       var AN : Track .
+
+       *** AD to show errors? 
+       eq clearTracks(RouteName1A) = (AA, AB, AC) . 
+       eq clearTracks(RouteName1B) = (AA, AB, BC) . 
+ 
+       eq normalPts(RouteName1A) = (P1) .
+       eq normalPts(RouteName1B) = empty .
+
+       eq reversePts(RouteName1A) = empty .     
+       eq reversePts(RouteName1B) = (P1) .
+
+       eq isReleaseTrack(AN) = (AN == AE or AN == BE) .
+
+
+       *** To discuss: abstracting by dropping routename from release information
+       *** eq release(RouteName1A, P1) = AE .
+       *** eq release(RouteName1B, P1) = BE .
+       *** eq release(RouteName2, P2) = AF .
+       *** eq release(RouteName3, P2) = AF .
+       
+       eq release(AE) = P1 .
+       eq release(BE) = P1 .
+
+       eq conflictingRoutes(RouteName1A) = (RouteName1B) .
+       eq conflictingRoutes(RouteName1B) = (RouteName1A) .
+       
+endtom)

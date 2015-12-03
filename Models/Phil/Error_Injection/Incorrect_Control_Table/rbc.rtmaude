@@ -1,0 +1,92 @@
+*** This is a model of a radio block processor for the junction example.
+
+(tomod RADIOBLOCKPROCESSOR is protecting NAT-TIME-DOMAIN . 
+  protecting MSGS .
+  protecting TOPOLOGY .
+  protecting RBCTABLE .
+  protecting DISCRETE-SINGLE-TRAIN .
+  protecting CONTROLLER .
+  protecting MAP{Oid, RouteName} * (sort Map{Oid, RouteName} to MapOid2RouteName,
+                              sort Entry{Oid, RoutName} to EntryORN) .
+  including TIMED-MODEL-CHECKER .
+
+
+  *** The following is a class definition for the radio block processor RBC.
+  class RBC | avaliableRoutes : SetOfRouteNames, designatedRoutes : MapOid2RouteName  .
+
+  vars N,N1,N2 : Nat .
+  vars O1 O2 : Oid .
+  vars B1,B2 : Bool . 
+  var AN : Track  .
+  vars ROUTES1, ROUTES2 : SetOfRouteNames .
+  vars MAPTRN , MAPRRN2 : MapOid2RouteName .
+  var RN, RN2 : RouteName .
+  var MAPRNB : MapRouteName2Bool .
+  
+
+  *** The following equations deal with the maximal time elapse for RBC objects.
+  eq mte(< O1 : RBC | >) = 0 .
+
+  *** Rule to deal with the delta operation
+  rl [deltarbc] : delta(< O1 : RBC | >) => < O1 : RBC |  > .
+
+  *** To deal with MA requests.
+  ceq marequest(O1, AN)
+      < O2 : RBC | avaliableRoutes : ROUTES1 , designatedRoutes : MAPTRN > 
+      =
+      proceedrequest( nextRoute( ROUTES1, possibleNextRoutes(AN)))
+      < O2 : RBC | avaliableRoutes : ROUTES1 ,
+                   designatedRoutes : insert(O1,
+		                             nextRoute( ROUTES1, possibleNextRoutes(AN)),
+					     MAPTRN) > 
+      if not (nextRoute(ROUTES1, possibleNextRoutes(AN)) == empty) .
+
+  ceq marequest(O1, AN)
+      < O2 : RBC | avaliableRoutes : ROUTES1 , designatedRoutes : MAPTRN > 
+      =
+      < O2 : RBC | avaliableRoutes : ROUTES1 , designatedRoutes : MAPTRN > 
+      if (nextRoute(ROUTES1, possibleNextRoutes(AN)) == empty) .
+
+
+  *** To deal with proceedgrant messages from interlocking, and removing designated routes.
+  eq proceedgrant(RN)
+     < O2 : RBC | designatedRoutes : MAPTRN > 
+     =
+     magrant(getTrain(RN, MAPTRN), endOfAuthority(RN)) 
+     < O2 : RBC |  designatedRoutes : removeRoute(getTrain(RN, MAPTRN), MAPTRN) >  . 
+
+  *** To update routes from interlocking Type is tricky!
+  eq setroutes(MAPRNB)
+     < O2 : RBC | avaliableRoutes : ROUTES1 , designatedRoutes : MAPTRN >
+     =
+     < O2 : RBC | avaliableRoutes : getRouteSet(MAPRNB) , designatedRoutes : MAPTRN > .
+
+ 
+
+  *** Functions
+  op nextRoute : SetOfRouteNames SetOfRouteNames -> RouteName .
+  eq nextRoute(empty, ROUTES2) = empty .
+  eq nextRoute(ROUTES1, empty) = empty .
+  ceq nextRoute ((RN, ROUTES1), ROUTES2 ) = RN if RN in ROUTES2 .
+  ceq nextRoute ((RN, ROUTES1), ROUTES2 ) = nextRoute(ROUTES1, ROUTES2) if not RN in ROUTES2 .
+  
+  op getTrain : RouteName MapOid2RouteName -> Oid .
+  ceq getTrain (RN, (O1 |-> RN2 , MAPTRN)) = O1 if RN == RN2 .
+  ceq getTrain (RN, (O1 |-> RN2 , MAPTRN)) = getTrain(RN, MAPTRN) if not (RN == RN2) . 
+ 
+  op getRouteSet : MapRouteName2Bool -> SetOfRouteNames .
+  eq getRouteSet (empty) = empty .
+  eq getRouteSet ((MAPRNB, RN |-> true)) = (RN, getRouteSet(MAPRNB)) .
+  eq getRouteSet ((MAPRNB, RN |-> false)) = (getRouteSet(MAPRNB)) . 
+
+  op removeRoute : Oid MapOid2RouteName -> MapOid2RouteName .
+  eq removeRoute(O1, empty) = empty .
+  ceq removeRoute(O1, (MAPTRN ,  O2 |-> RN)) = MAPTRN if O1 == O2 .
+  ceq removeRoute(O1, (MAPTRN,  O2 |-> RN )) = removeRoute(O1, MAPTRN) if not O1 == O2 .
+
+  *** Vars for tsearch
+  var REST : Configuration .
+
+
+endtom)
+

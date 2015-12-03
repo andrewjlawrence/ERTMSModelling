@@ -1,0 +1,88 @@
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view RouteName from TRIV to TOPOLOGY is
+      sort Elt to RouteName .
+endv)
+
+(view PointPos from TRIV to TOPOLOGY is
+      sort Elt to PointPos .
+endv)
+
+*** Seperate types and equations.
+(tomod CONTROLTABLE is protecting POSRAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                                    sort Elt{RouteName} to EltRouteName) .
+      
+
+       op clearTracks : RouteName -> SetOfTracks .
+       op normalPts : RouteName -> SetOfPoints .
+       op reversePts : RouteName -> SetOfPoints .
+       op isReleaseTrack : Track -> Bool .
+       op release : Track -> Point .
+       
+       *** is this needed?
+       op conflictingRoutes : RouteName -> RouteName .
+
+       var AN : Track .
+
+       *** AD to show errors? 
+       eq clearTracks(RouteName1A) = (AA, AB, AC, AD, AE, AF) . 
+       eq clearTracks(RouteName1B) = (AA, AB, BC, BD, BE, BF) . 
+       eq clearTracks(RouteName1C) = (AA, AB, BC, BD, CE, CF) .
+       eq clearTracks(RouteName2) = (CG, BH, BI, AJ) .
+       eq clearTracks(RouteName3) = (BG, BH, BI, AJ) .
+       eq clearTracks(RouteName4) = (AG, AH, AI, AJ) .
+       eq clearTracks(RouteName5) = empty .     
+ 
+       eq normalPts(RouteName1A) = (P1) .
+       eq normalPts(RouteName1B) = (P2) .
+       eq normalPts(RouteName1C) = empty .
+       eq normalPts(RouteName2) = empty .
+       eq normalPts(RouteName3) = (P3) .
+       eq normalPts(RouteName4) = (P4) .
+       eq normalPts(RouteName5) = empty .
+
+       eq reversePts(RouteName1A) = empty .     
+       eq reversePts(RouteName1B) = (P1) .
+       eq reversePts(RouteName1C) = (P1, P2) .
+       eq reversePts(RouteName2) = (P3, P4) .
+       eq reversePts(RouteName3) = (P4) .
+       eq reversePts(RouteName4) = empty .
+       eq reversePts(RouteName5) = empty .
+
+       eq isReleaseTrack(AN) = (AN == AC or AN == BC or AN == CE or AN == BE  or AN == BI or AN == Exit) .
+
+
+       *** To discuss: abstracting by dropping routename from release information
+       *** eq release(RouteName1A, P1) = AC .
+       *** eq release(RouteName1B, P1) = BC .
+       *** eq release(RouteName2, P2) = AJ .
+       *** eq release(RouteName3, P2) = AJ .
+       
+       eq release(AC) = P1 .
+       eq release(BC) = P1 .
+       eq release(BE) = P2 .
+       eq release(CE) = P2 .
+       eq release(BI) = P3 .
+       eq release(Exit) = P4 .
+       
+       eq conflictingRoutes(RouteName1A) = (RouteName1B, RouteName1C) .
+       eq conflictingRoutes(RouteName1B) = (RouteName1A, RouteName1C) .
+       eq conflictingRoutes(RouteName1C) = (RouteName1A, RouteName1B) .
+       eq conflictingRoutes(RouteName2) = (RouteName3, RouteName4) .
+       eq conflictingRoutes(RouteName3) = (RouteName2, RouteName4) .
+       eq conflictingRoutes(RouteName4) = (RouteName2, RouteName3) .
+       eq conflictingRoutes(RouteName5) = empty .
+       
+endtom)

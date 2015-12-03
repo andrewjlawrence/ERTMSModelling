@@ -1,0 +1,67 @@
+*** This file contains a module modelling a solid state interlocking
+
+(tomod INTERLOCKING is protecting NAT-TIME-DOMAIN . 
+   protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTB,
+                               sort Entry{Track,Bool} to EntryTB) .
+   protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPB,
+                               sort Entry{Point,Bool} to EntryPB) .
+   protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRNB,
+                               sort Entry{RouteName,Bool} to EntryRNB) .
+   protecting TOPOLOGY .
+   protecting CONTROLTABLE .
+   protecting MSGS .
+
+
+  *** The interlocking has 3 states
+
+  sort InterState .
+  ops idle resseg resproceed :  -> InterState [ctor] .
+  
+  *** The following is the class for an interlocking
+  *** state the interlockings state
+  *** reqroute the currently requested route
+  *** occ a map from track segment number to a boolean indicating that tracksegment is occupied.
+
+  class Inter | state : InterState, routeset : MapRNB, routelocked : MapRNB , occ : MapTB,  pointsnormal : MapPB, pointsreverse : MapPB .
+
+  vars N,N2 : Nat .
+  vars P : NzNat . 
+  vars MAPTB1 : MapTB .
+  vars MAPPB1, MAPPB2 : MapPB .
+  vars MAPRNB1, MAPRNB2 : MapRNB .
+  vars O, O1, O2 : Oid .
+  vars B1, B2, B3, B4 , B5 : Bool . 
+  var REST : Configuration .
+  var A1,A2 : Track .
+  var RN1, RN2 : TRoute .
+  vars RNam1, RNam2 : RouteName .
+  *** Rules to deal with the transition of time.
+  eq mte(< O : Inter | >) = 1 .
+  *** The interlocking sends the track occupation information to the rbc
+  rl [deltainter] : delta(< O : Inter | occ : MAPTB1  >) => < O : Inter | >  .
+
+
+  *** Rules to deal with the controller setting a route
+  crl [routerequest1] : {routeset(RNam1) < O : Inter | state : idle , routeset : MAPRNB1, routelocked : MAPRNB2, occ : MAPTB1, pointsnormal : MAPPB1, pointsreverse : MAPPB2 > REST} => {< O : Inter | state : idle , routeset : setRoute(RNam1, MAPRNB1), pointsnormal : setPointsNormal(RNam1,MAPPB1), pointsreverse : setPointsReverse(RNam1,MAPPB2) > REST} if (MAPRNB1[RNam1] and RoutePointsSet(RNam1,MAPPB1,MAPPB2)) or checkClear(RNam1,MAPTB1)  .
+  crl [routedeny] : {routeset(RNam1) < O : Inter | state : idle , routeset : MAPRNB1, occ : MAPTB1, pointsnormal : MAPPB1, pointsreverse : MAPPB2 > REST} => {< O : Inter | state : idle > REST} if not RoutePointsSet(RNam1,MAPPB1,MAPPB2) and not checkClear(RNam1, MAPTB1)  .
+  
+  *** Rules to deal with the RBC requesting a proceed on a route.
+  crl [routeproceed] : {proceedrequest(RNam1) < O : Inter | state : idle , routeset : MAPRNB1, routelocked : MAPRNB2  > REST} => {proceedgrant(RNam1) < O : Inter | state : idle, routelocked : insert(RNam1, true, MAPRNB2) > REST} if MAPRNB1[RNam1] .  
+  crl [routedenyproceed] : {proceedrequest(RNam1) < O : Inter | state : idle , routeset : MAPRNB1 > REST} => {proceeddeny(RNam1) < O : Inter | state : idle > REST} if not MAPRNB1[RNam1] .  
+
+  *** Rules to deal with a tracksegment transition.
+  crl [trans] : {tsegtrans(A1,RN1)< O : Inter | occ : MAPTB1 > REST} => {< O : Inter | occ : insert(A1,true,insert(previous(A1,RN1), false, MAPTB1)) > trackocc(insert(A1,true,insert(previous(A1,RN1), false, MAPTB1))) REST } if not previous(A1,RN1) == external-track .
+  rl [transow] : {tsegtrans(A1,RN1)< O : Inter | occ : MAPTB1 > REST} => {< O : Inter | occ : insert(A1,true,insert(previous(A1,RN1), false, MAPTB1)) > trackocc(insert(A1,true,insert(previous(A1,RN1), false, MAPTB1))) REST} [owise] .
+
+  *** Rules to deal with a nroute transition.
+  rl [ntrans] : {nroutetrans1(O1, RNam1) < O2 : Inter | pointsnormal : MAPPB1, pointsreverse : MAPPB2 > REST} => {nroutetrans2(O1, MAPPB1, MAPPB2, RNam1) < O2  : Inter |  > REST} .  
+
+  *** Rule to deal with a train leaving.
+  rl [leave4] : {leave(RN1)< O : Inter | occ : MAPTB1 > REST} => {< O : Inter | occ : insert(routeexit(RN1),false,MAPTB1) > trackocc(insert(routeexit(RN1),false,MAPTB1)) REST} .
+
+
+
+
+
+endtom)
+

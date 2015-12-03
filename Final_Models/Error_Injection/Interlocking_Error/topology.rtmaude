@@ -1,0 +1,55 @@
+(tomod TOPOLOGY is protecting POSRAT-TIME-DOMAIN . 
+
+	sort TRoute .
+	ops  TRoute1A, TRoute1B, TRoute2, TRoute3, TRoute4 : -> TRoute .
+
+ 	sort RouteName .
+       	ops  RouteName1A RouteName1B RouteName2 RouteName3 RouteName4 : -> RouteName .
+
+	sort Track .
+	ops AA AB AC AD AE AF BC BD Entry Exit Nulltrack : -> Track .
+
+	sort Point .
+	ops P1 P2 : -> Point . 
+
+	sort PointPos .
+	ops normal reverse : -> PointPos .
+
+	*** change to set of tracks?
+	op next : Track PointPos -> Track . 
+	var PPos : PointPos .
+        eq next(Entry,PPos) = AA .
+	eq next(AA,PPos) = AB .
+	eq next(AB,normal) = AC .
+	eq next(AB,reverse) = BC .
+	eq next(BC,PPos) = BD .
+	eq next(BD,PPos) = AE .
+	eq next(AC,PPos) = AD .
+	eq next(AD,PPos) = AE .
+	eq next(AE,normal) = AF .
+	eq next(AE,reverse) = AF .
+	eq next(AF,PPos) = Exit .
+
+	op TrackToPoint : Track -> Point .
+	eq TrackToPoint(AB) = P1 .
+	eq TrackToPoint(AE) = P2 .
+ 
+        op point : Track -> Bool .
+	var AN : Track .
+        eq point(AN) = ((AN == AB) or (AN == AE)) .
+
+	op endof : Track -> NNegRat .
+	eq endof(Entry) = 1 .
+	eq endof(AA) = 1499 .
+	eq endof(AB) = 1749 .
+	eq endof(AC) = 3249 .
+	eq endof(BC) = 3249 .
+	eq endof(AD) = 4749 .
+	eq endof(BD) = 4749 .
+	eq endof(AE) = 4999 .
+	eq endof(AF) = 6499 .
+	eq endof(Exit) = 7999 .
+
+endtom)
+
+(rew next(AA,PPos) .)

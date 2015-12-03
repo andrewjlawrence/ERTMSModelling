@@ -1,0 +1,73 @@
+in rtm-tctl.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+in oldcontroller.rtmaude .
+in interlocking.rtmaude .
+in train.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+**** Run 1 train though
+
+ eof .
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 > 
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+} in time <= 200 .)
+
+
+**** Run 2 trains through 
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0  >
+} in time <= 200 .)
+
+
+*** Check 1 train reaches exit
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+ 
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0  >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : Exit  > 
+}
+in time <= 129 .)
+
+eof .
+
+  *** Check trains can both move onto AA as first train (switch the test after =>*)  --- change to controller.rtmaude
+
+
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+  < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 1 >
+  < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : AA  >  < train2 : Train |  tseg : Entry  >
+}
+in time <= 100 .)
+
+
+
+
+
+
+
+
+
+

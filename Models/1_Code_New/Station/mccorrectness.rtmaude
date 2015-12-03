@@ -1,0 +1,31 @@
+(tomod MODEL-CHECK-ERTMS is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting ERTMS .
+
+
+  vars O1,O2,O1',O2',O3,O4,O5 : Oid .
+  vars N1,N2,N1',N2' : Nat .
+  var R : Time .
+  var B : Bool .
+
+  vars T1, T2 : Track .
+
+  vars REST,REST2 : Configuration .
+  var OBJREST : ObjectConfiguration .
+  var MREST : MsgConfiguration .   
+   
+    
+  op trainintrack : Track -> Prop [ctor] .
+
+  
+  var P : Prop .
+
+*** dummy safety condition
+
+  eq { REST  < O2 : Train |  tseg : T1 > } |= trainintrack(T2) = (T1 == T2) .   
+    
+endtom)
+ 
+(mc initialstate1 |=t <> trainintrack(BC)  in time <= 50 .) 

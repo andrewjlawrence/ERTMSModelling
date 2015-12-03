@@ -1,0 +1,100 @@
+*** a module for a discrete single train.
+***
+*** 
+***   
+
+(tomod DISCRETE-SINGLE-TRAIN is protecting NAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting MSGS .
+       protecting CONTROLTABLE .
+       protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPB,
+                               sort Entry{Point,Bool} to EntryPB) .
+
+  *** The are 4 train states
+  *** cons for a train traveling at a constant (maximum speed)
+  *** acc  for an accelerating train
+  *** stop for a stopped train
+  *** brake for a train that is braking.
+  sort TrainState .
+  ops  cons acc stop brake :  -> TrainState [ctor] .
+
+  *** The discrete single train class.
+  *** state the trains state
+  *** dist the position of the train along the track relative to the stating position.
+  *** speed the velocity at which the train is moving alway from the starting position.
+  *** ac the acceleration of the train
+  *** ma the movement authority of the train.
+  *** tseg the current track segment which the train is in.
+  *** maxspeed the max speed of the train
+  *** route The route that the train is travelling along. 
+  class Train | state : TrainState, dist : Nat, speed : Nat, ac : Nat,  ma : Nat, tseg : Track , maxspeed : Nat, troute : TRoute, nroute : RouteName .
+
+
+  sort MyConfig .
+  subsort ObjectConfiguration < MyConfig .
+  subsort EmptyConfiguration < MyConfig .  
+  var MyREST : MyConfig .
+
+  op dma : Nat Nat -> Nat .
+  op bd : Nat -> Nat .
+  op trackseg : Configuration -> Configuration . 
+  op nroute : Configuration -> Configuration .
+  vars N,N1, N2,M1,M2 : Nat .
+  vars P : NzNat . 
+  vars DT,MA,S,A,MAX : Nat .
+  vars O,O1,O2 : Oid .
+  vars MAPPB1, MAPPB2 : MapPB .
+  var AN : Track .
+  var TRN : TRoute .
+  var NRN : RouteName .
+  var OCREST : ObjectConfiguration .
+  var REST : Configuration . 
+  var M : Msg .
+
+  ceq dma(DT,MA) = MA monus DT if DT <= MA .
+  ceq dma(DT,MA) = (tlength monus DT) + MA if MA < DT .
+ 
+  eq bd(S) = (S * S) div 2 .
+
+  eq mte(< O : Train | >) = 1 . 
+
+*** The following way of detecting a transition between track segments is inefficient and could be improved.
+
+  crl [tsegtrans] : trackseg(< O : Train | dist : DT, tseg : AN, troute : TRN, nroute : NRN >) => < O : Train | dist : DT, tseg : next(AN,TRN) > tsegtrans(next(AN,TRN), TRN) if tsegtransition(AN,DT) . 
+  rl [tsegtrans2] : trackseg(< O : Train | dist : DT, tseg : AN >) => < O : Train | dist : DT, tseg : AN >  [owise] . 
+  eq [tsegcommute] : trackseg(< O : Train | > M ) = trackseg(< O : Train | >) M .
+
+*** The following rewrite rules detect a transition between named routes.
+*** First we fire a message at the interlocking to get the current point settings.  
+  crl [nroutetrans] : nroute(< O : Train | dist : DT, nroute : NRN >) => < O : Train |  > nroutetrans1(O, NRN) if nroutetransition(DT,NRN) . 
+*** Secondly we take the returned message from the interlocking and use it to calculate the next route and track segment based on the point settings .
+  crl [nroutetrans] : nroutetrans2(O, MAPPB1, MAPPB2, NRN) < O : Train | dist : DT, tseg : AN, nroute : NRN > => < O : Train | dist : DT, nroute : nroutenext(NRN,MAPPB1,MAPPB2) > nroutetrans3(O,nroutenext(NRN,MAPPB1,MAPPB2)) if nroutetransition(DT,NRN) . 
+
+ rl [nroutetrans2] : nroute(< O : Train | dist : DT, tseg : AN >) => < O : Train | dist : DT, tseg : AN >  [owise] . 
+ 
+
+*** Do we need these two rules??? I think its possible to simplify them and remove one
+ crl [recma] : magrant(O1,N) < O1 : Train | dist : DT, ma : MA > => < O1 : Train | ma : N > if   MA < N or N < DT  .
+ crl [recma2] : magrant(O1,N) < O1 : Train | dist : DT, ma : MA > => < O1 : Train | ma : MA > if  N <= MA and DT <= N  .
+
+*** The following rewrite rules capture the physical behaviour of the train.
+
+  crl [incspeed] : delta(< O : Train | state : acc,  dist : DT, speed : S, ac : A, ma : MA , maxspeed : MAX >)   => pos(O,DT)trackseg(nroute(< O : Train |  dist : (DT + S), speed : S + A >))  if S + A < MAX and  bd(S + A) <= dma(DT + S, MA) and (DT + S) < tlength . 
+  crl [maxspeed] : delta(< O : Train | state : acc, dist : DT, speed : S, ac : A, ma : MA, maxspeed : MAX >)   => pos(O,DT) trackseg(nroute(< O : Train | state : cons, dist : (DT + S) , speed : MAX >))   if MAX <= S + A and bd(MAX) <= dma(DT + S , MA) and (DT + S) < tlength .   
+  crl [steadyspeed] : delta(< O : Train | state : cons, dist : DT, speed : S, ac : A, ma : MA >)  => pos(O,DT) trackseg(nroute(< O : Train |  dist : (DT + S) >))  if bd(S + A)  <= dma(DT + S, MA) and (DT + S) < tlength .
+
+*** if the distance to the MA in the next instance of time is less than or eq to the breaking distance the train stops
+ 
+  crl [accbreak] : delta(< O : Train | state : acc, dist : DT, speed : S, ac : A, ma : MA >) => marequest(O,DT) pos(O,DT) trackseg(nroute(< O : Train | state : brake, dist : (DT + S) , speed : S monus A >))   if  dma(DT + S, MA)  <  bd(S + A) and (DT + S) < tlength .
+
+  crl [consbreak] : delta(< O : Train | state : cons, dist : DT, speed : S, ac : A, ma : MA >)   => marequest(O,DT) pos(O,DT) trackseg(nroute(< O : Train | state : brake, dist : (DT + S), speed : S monus A >))    if  dma(DT + S, MA)  <  bd(S + A) and (DT + S) < tlength .
+  crl [breaking] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)   => marequest(O,DT) pos(O,DT) trackseg(nroute(< O : Train | state : brake, dist : (DT + S), speed : S monus A >))   if 0 < S monus A and dma(DT + S, MA)  <  bd(S + A) and (DT + S) < tlength .
+  crl [stopping] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)  => marequest(O,DT) pos(O,DT) trackseg(nroute(< O : Train | state : stop,  speed : 0 >))   if 0 == S monus A and dma(DT + S, MA)  <  bd(S + A)  and (DT + S) < tlength .
+  crl [stopped] :  delta(< O : Train | state : stop, dist : DT, speed : S, ac : A, ma : MA >)  => marequest(O,DT) pos(O,DT) < O : Train | >  if  dma(DT + S, MA)  <  bd(S + A) .
+  crl [breakacc] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)  =>  pos(O,DT) trackseg(nroute(< O : Train | state : acc, dist : (DT + S ), speed : S >))   if  bd(S + A)   <= dma((DT + S) , MA) and (DT + S) < tlength .
+  crl [stopacc] :  delta(< O : Train | state : stop, dist : DT, speed : S, ac : A, ma : MA >)  =>  pos(O,DT) trackseg(nroute(< O : Train | state : acc, dist : (DT + S), speed : S >))    if  bd(S + A)   <= dma((DT + S) , MA) and (DT + S) < tlength .
+  crl [leave] :  delta(< O : Train | dist : DT, speed : S, ac : A, ma : MA, troute : TRN >)   =>  pos(O,DT)leave(TRN)   if  troutelength(TRN) <= (DT + S)  .
+
+endtom)
+
+(trew {< train1 : Train | state : acc, dist : 0, speed : 0, ac : 1, ma : 300, tseg : AA , maxspeed : 5 , troute : R1 , nroute : RouteName1  >} in time <= 100 .)

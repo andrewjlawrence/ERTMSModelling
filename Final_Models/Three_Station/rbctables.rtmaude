@@ -1,0 +1,46 @@
+(view RouteName from TRIV to TOPOLOGY is
+      sort Elt to RouteName .
+endv)
+
+(tomod RBCTABLE is protecting POSRAT-TIME-DOMAIN . 
+  protecting TOPOLOGY .
+  protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                                    sort Elt{RouteName} to EltRouteName) .
+
+  op possibleNextRoutes : Track ->  SetOfRouteNames .
+  op endOfAuthority : RouteName -> NNegRat .
+
+  eq possibleNextRoutes(Entry) = (RouteName1A, RouteName1B, RouteName1C) .
+  eq possibleNextRoutes(AA) = (RouteName4, RouteName3, RouteName2) .
+  eq possibleNextRoutes(AB) = (RouteName4, RouteName3, RouteName2) .
+  eq possibleNextRoutes(AC) = (RouteName4) .
+  eq possibleNextRoutes(AD) = (RouteName4) .
+  eq possibleNextRoutes(AE) = (RouteName4) .
+  eq possibleNextRoutes(AF) = (RouteName4) .
+  eq possibleNextRoutes(BC) = (RouteName2, RouteName3) .
+  eq possibleNextRoutes(BD) = (RouteName2, RouteName3) .
+  eq possibleNextRoutes(BE) = (RouteName3) .
+  eq possibleNextRoutes(BF) = (RouteName3) .
+  eq possibleNextRoutes(CE) = (RouteName2) .
+  eq possibleNextRoutes(CF) = (RouteName2) .
+  eq possibleNextRoutes(CG) = (RouteName5) .
+  eq possibleNextRoutes(BG) = (RouteName5) .
+  eq possibleNextRoutes(BH) = (RouteName5) .
+  eq possibleNextRoutes(BI) = (RouteName5) .
+  eq possibleNextRoutes(AG) = (RouteName5) .
+  eq possibleNextRoutes(AH) = (RouteName5) .
+  eq possibleNextRoutes(AI) = (RouteName5) .
+  eq possibleNextRoutes(AJ) = (RouteName5) .
+
+
+  eq endOfAuthority(RouteName1A) = 7749 .
+  eq endOfAuthority(RouteName1B) = 7749 .
+  eq endOfAuthority(RouteName1C) = 7749 .
+  eq endOfAuthority(RouteName2) = 11249 .
+  eq endOfAuthority(RouteName3) = 11249 .
+  eq endOfAuthority(RouteName4) = 11249 .
+  eq endOfAuthority(RouteName5) = 12749 .
+ 
+
+endtom)
+

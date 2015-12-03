@@ -1,0 +1,85 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{CCM{\etalchar{+}}10}
+
+\bibitem[CCL{\etalchar{+}}12]{cimatti12}
+Alessandro Cimatti, Raffaele Corvino, Armando Lazzaro, Iman Narasamdya, Tiziana
+  Rizzo, Marco Roveri, Angela Sanseviero, and Andrei Tchaltsev.
+\newblock Formal verification and validation of ertms industrial railway train
+  spacing system.
+\newblock In P.~Madhusudan and SanjitA. Seshia, editors, {\em Computer Aided
+  Verification}, volume 7358 of {\em Lecture Notes in Computer Science}, pages
+  378--393. Springer Berlin Heidelberg, 2012.
+
+\bibitem[CCM{\etalchar{+}}10]{chiappini10}
+A.~Chiappini, A.~Cimatti, L.~Macchi, O.~Rebollo, M.~Roveri, A.~Susi,
+  S.~Tonetta, and B.~Vittorini.
+\newblock Formalization and validation of a subset of the european train
+  control system.
+\newblock In {\em Software Engineering, 2010 ACM/IEEE 32nd International
+  Conference on}, volume~2, pages 109--118, May 2010.
+
+\bibitem[CDE{\etalchar{+}}03]{MC03}
+Manuel Clavel, Francisco Dur{\'a}n, Steven Eker, Patrick Lincoln, Narciso
+  Mart{\'i}-Oliet, Jos{\'e} Meseguer, and Carolyn Talcott.
+\newblock The {M}aude 2.0 system.
+\newblock In R.~Nieuwenhuis, editor, {\em International Conference on Rewriting
+  Techniques and Applications (RTA)}, volume 2706 of {\em Lecture {N}otes in
+  {C}omputer {S}cience}, pages 76--87. Springer Berlin Heidelberg, 2003.
+
+\bibitem[EMS02]{ES00}
+Steven Eker, Jos{\'e} Meseguer, and Ambarish Sridharanarayanan.
+\newblock The {Maude} {LTL} model checker.
+\newblock In F.~Gadducci and U.~Montanari, editors, {\em Fourth Workshop on
+  Rewriting Logic and its Applications, WRLA '02}, volume~71 of {\em Electronic
+  Notes in Theoretical Computer Science}. Elsevier, 2002.
+
+\bibitem[Ind15]{ERTMS}
+European~Railway Industry.
+\newblock {ERTMS}.
+\newblock \url{http://www.era.europa.eu/Core-Activities/ERTMS/Pages/home.aspx},
+  2015.
+\newblock Accessed: 2015-08-30.
+
+\bibitem[JMN{\etalchar{+}}14]{sttt14}
+Phillip James, Faron Moller, Nguyen~Hoang Nga, Markus Roggenbach, Steve~A.
+  Schneider, and Helen Treharne.
+\newblock Techniques for modelling and verifying railway interlockings.
+\newblock {\em {STTT}}, 16(6):685--711, 2014.
+
+\bibitem[LBJ{\etalchar{+}}14]{old}
+Andrew Lawrence, Ulrich Berger, Phillip James, Markus Roggenbach, and Monika
+  Seisenberger.
+\newblock Modelling and analysing the {E}uropean {R}ail {T}raffic {M}anagement
+  {S}ystem in {R}eal-{T}ime {M}aude.
+\newblock In Cyrille Arthon and Peter~Csaba {\"O}lveczky, editors, {\em
+  {FTSCS}'14 -- Preliminary Proceedings}, 2014.
+
+\bibitem[M{\"O}07]{PO07b}
+Jos{\'e} Meseguer and Peter~Csaba {\"O}lveczky.
+\newblock Semantics and pragmatics of real-time maude.
+\newblock {\em Higher-Order and Symbolic Computation}, 20(1-2):161--196, 2007.
+
+\bibitem[NGP{\etalchar{+}}14]{nardone14}
+Roberto Nardone, Ugo Gentile, Adriano Peron, Massimo Benerecetti, Valeria
+  Vittorini, Stefano Marrone, Renato De~Guglielmo, Nicola Mazzocca, and Luigi
+  Velardi.
+\newblock Dynamic state machines for formalizing railway control system
+  specifications.
+\newblock In {\em Formal Techniques for Safety-Critical Systems}, pages
+  93--109. Springer International Publishing, 2014.
+
+\bibitem[ope15]{openETCS}
+{openETCS}.
+\newblock \url{http://openetcs.org}, 2015.
+\newblock Accessed: 2015-08-30.
+
+\bibitem[VHP15]{vu15}
+LinhH. Vu, AnneE. Haxthausen, and Jan Peleska.
+\newblock Formal modeling and verification of interlocking systems featuring
+  sequential release.
+\newblock In Cyrille Artho and Peter~Csaba √ñlveczky, editors, {\em Formal
+  Techniques for Safety-Critical Systems}, volume 476 of {\em Communications in
+  Computer and Information Science}, pages 223--238. Springer International
+  Publishing, 2015.
+
+\end{thebibliography}

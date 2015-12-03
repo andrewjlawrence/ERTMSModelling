@@ -1,0 +1,20 @@
+The ERTMS components exchange a number of messages, see Figure
+\ref{fig:arch}. As we are dealing with a single geographic region,
+controller, interlocking, and RBC are unique. Thus, for most messages
+no object identifier is needed:
+%
+\begin{lstlisting}[columns=fixed]
+msgs routerequest, proceedrequest, ... : RouteName -> Msg .
+\end{lstlisting}
+This is in contrast to messages involving trains. For instance, the message 
+\begin{lstlisting}[columns=fixed]
+msg magrant : Oid Nat -> Msg .
+\end{lstlisting}
+grants a movement authority (encoded as a natural number, determining
+the position to which the train is allowed to travel) to a specific
+train with an object identifier of type \verb|Oid|.
+%
+Messages are urgent, i.e., their processing time is 0:
+\begin{lstlisting}[columns=fixed]
+eq mte(M:Msg) = 0 .
+\end{lstlisting}

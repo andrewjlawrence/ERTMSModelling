@@ -1,0 +1,47 @@
+in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+in controller.rtmaude .
+in interlocking.rtmaude .
+in dst.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+**** Run train through and leave
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+} in time <= 140 .)
+
+eof .
+
+**** Run 2 trains through 
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+} in time <= 30 .)
+
+
+*** Check 1 train reaches exit
+(tsearch {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0, routes : routeOrder >
+}
+=>*
+{ 
+     REST < train1 : Train |  tseg : Exit  >
+}
+in time <= 140 .)
+
+
+
+  

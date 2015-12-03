@@ -1,0 +1,35 @@
+The RBC mediates between requests from the trains to extend their
+movement authorities and the successful route requests by the
+controller. To this end it reconciles two different views on the rail
+yard: trains use continuous data to represent their position (in our
+model the distance from the leftmost point of the rail yard); the
+interlocking uses discrete data (track occupation, set routes, point
+positions) in its logic.
+%
+In our model, we take a rather simplified and also abstract view on
+the challenges involved. We make the assumption that trains request a
+new movement authority only on the track on which their current
+authority ends. Furthermore, we abstract the mapping between
+continuous and discrete data to the two tables presented in Figure
+\ref{fig:rbctables}.
+
+In our model, the RBC only holds information on successful route
+requests (in \verb|availableRoutes|) and for which trains
+(characterised by their \verb|Oid|) it currently has an open ``request
+to proceed'' (in \verb|designatedRoutes|):
+%
+\begin{lstlisting}[columns=fixed]
+class RBC | availableRoutes  : SetOfRouteNames, 
+            designatedRoutes : MapOid2RouteName  .
+\end{lstlisting}
+
+Also, the RBC is a passive system component. A typical reaction is the
+following: When the interlocking sends a ``proceed message'' for a
+route \verb|RN|, the RBC sends a new ``end of authority'' to the train
+and removes the corresponding request from its internal state.
+%
+\begin{lstlisting}[columns=fixed]
+eq   proceedgrant(RN) < O2 : RBC | designatedRoutes : TRN > 
+   = magrant(getTrain(RN, TRN), endOfAuthority(RN)) 
+     < O2 : RBC | designatedRoutes : removeRoute(_,_) >  . 
+\end{lstlisting}

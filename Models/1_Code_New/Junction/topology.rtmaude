@@ -1,0 +1,114 @@
+(tomod TOPOLOGY is protecting NAT-TIME-DOMAIN . 
+ 
+sort Track .
+ops AA, AB, AC, AD, AE : -> Track .
+ops BD, BE : -> Track .
+var AN : Track .
+
+sort TRoute .
+sort RouteName .
+ops R1, R2 : -> TRoute .
+var RN : TRoute .
+sort Point .
+ops P1, P2 : -> Point . 
+
+ops RouteName1 RouteName2 RouteName3 : -> RouteName .
+op getTRoute : RouteName -> TRoute .
+eq getTRoute(RouteName1) = R1 .
+eq getTRoute(RouteName2) = R1 .
+eq getTRoute(RouteName3) = R2 .
+
+op next : Track TRoute -> Track . 
+op previous : Track TRoute -> Track .
+op isexittrack : Track -> Bool .
+op routeexit : TRoute -> Track .
+op initialttrack :  TRoute -> Track .
+op initialntrack :  RouteName -> Track .
+op initialnroute : TRoute -> RouteName .
+op external-track : -> Track .
+
+eq initialttrack(R1) = AA .
+eq initialttrack(R2) = AA .
+eq initialntrack(RouteName1) = AA .
+eq initialntrack(RouteName2) = AC .
+eq initialntrack(RouteName3) = AC .
+eq initialnroute(R1) = RouteName1 .
+eq initialnroute(R2) = RouteName2 .
+
+ceq isexittrack(AN) = true if AN == AE or AN == BE .
+eq isexittrack(AN) = false [owise] .
+
+op routeexit : TRoute -> Track . 
+eq routeexit(R1) = AE .
+eq routeexit(R2) = BE .
+
+ 
+eq next(AA,RN) = AB .
+eq next(AB,RN) = AC .
+eq next(AC,R1) = AD .
+eq next(AC,R2) = BD .
+eq next(AD,R1) = AE .
+eq next(BD,R2) = BE .
+
+eq previous(AA,RN) = external-track .
+eq previous(AB,RN) = AA .
+eq previous(AC,RN) = AB .
+eq previous(AD,RN) = AC .
+eq previous(AE,RN) = AD .
+eq previous(BD,RN) = AC .
+eq previous(BE,RN) = BD .
+
+op endof : Track -> Nat .
+eq endof(AA) = 49 .
+eq endof(AB) = 99 .
+eq endof(AC) = 149 .
+eq endof(AD) = 199 .
+eq endof(AE) = 249 .
+eq endof(BD) = 199 .
+eq endof(BE) = 249 .
+
+var N : Nat .
+
+op gettrack : Nat TRoute -> Track .
+ceq gettrack(N,RN) = AA if 0 <= N and N < 50 .
+ceq gettrack(N,RN) = AB if 50 <= N and N < 100 .
+ceq gettrack(N,RN) = AC if 100 <= N and N < 150 .
+ceq gettrack(N,R1) = AD if 150 <= N and N < 200 .
+ceq gettrack(N,R1) = AE if 200 <= N and N < 250 .
+ceq gettrack(N,R2) = BD if 150 <= N and N < 200 .
+ceq gettrack(N,R2) = BE if 200 <= N and N < 250 .
+  
+
+ops tlength tseglength : -> Nat .       
+eq tlength = 249 .
+eq tseglength = 50 .
+
+op troutelength : TRoute -> Nat .
+eq troutelength(R1) = 249 .
+eq troutelength(R2) = 249 . 
+
+var DT : Nat .
+
+op tsegtransition : Track Nat -> Bool .
+eq tsegtransition(AN,DT) = endof(AN) < DT  .
+
+endtom)
+
+
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view TRoute from TRIV to TOPOLOGY is
+    sort Elt to TRoute .
+endv)
+
+(view RouteName from TRIV to TOPOLOGY is
+    sort Elt to RouteName .
+endv)
+
+(rew next(AB,R1) .)

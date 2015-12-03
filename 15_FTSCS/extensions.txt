@@ -1,0 +1,38 @@
+MR's wishlist:
+--------------
+
+add route cancel messages
+
+clarify the difference to CSP||B modelling with regards to route set,
+rout grant
+
+remove the maximal progress assumption
+
+train safety distance, currently 40m - Siemens input to that
+
+discuss with Siemens a good minimal frequency with which a controller
+can make route requests
+
+discuss with Siemens what strategies could be reasonable for movement
+authority requests from the train
+
+discuss with Siemens the location problem of a train - is there
+something better than our abstraction?
+
+validate with Siemens the "information packaging" of routes from the
+interlocking to the RBC
+
+train speed: reduced when going over a point in reverse
+
+different line speeds
+
+add an element of capacity
+
+discuss with Siemens that train drivers have to enter specific data on
+their trains before starting and that this might be a potential source
+of error
+
+choose good names in the model, have a unifying naming scheme on
+capitalization
+
+discuss the abstraction level of our RBC with Siemens

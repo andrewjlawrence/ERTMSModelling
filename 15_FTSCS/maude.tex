@@ -1,0 +1,117 @@
+\section{Maude/Real-Time Maude}
+
+The Maude system \cite{MC03} is a multi-purpose tool with support for
+executable specification, simulation and verification.
+%
+%%and our approach uses all of these capabilities.
+%
+Its wide range of capabilities made us to favour Maude. Particularly,
+we are interested in the Maude LTL Model Checker \cite{ES00}.  Real
+Time Maude \cite{PO07b} is an extension of Maude containing specific
+support enabling the modelling and verification
+%
+%of discrete time and 
+%
+real-time systems.
+%
+%The Real-Time Maude system contains models of discrete time based on the natural numbers and dense time based on the rational numbers.
+%
+%% Maude specifications are built from \emph{functional modules} 
+%% %
+%% %declared using \texttt{fmod} and \texttt{endfm}
+%% %
+%% which contain the following:
+%% %
+%% \begin{center}
+%% \begin{tabular}{| c | l |}
+%% \hline sorts & \texttt{sort} $s$ or \texttt{sorts} $s \ s' .$
+%% \\ \hline subsorts & \texttt{subsort} $s < s' \ .$ \\ \hline function
+%% symbols & \texttt{op} $f \ : \ s_1 \ldots s_n$ \texttt{->} $s \ .$
+%% \\ \hline variables & \texttt{vars} $v \ v' : s' .$\\ \hline
+%% unconditional equations &\texttt{eq} $t = t' .$\\ \hline conditional
+%% equations & \texttt{ceq} $t = t'$ \texttt{if} $cond$ \\ \hline
+%% membership axioms & \texttt{mb} $t \ : \ s \ .$ or \texttt{cmb} $t \ :
+%% \ s$ \texttt{if} $cond \ .$ \\ \hline unconditional rules &
+%% \texttt{rl} [label] : $t => t' .$ \\ \hline conditional rules &
+%% \texttt{crl} [label] : $t => t'$ \texttt{if} $cond$ \\ \hline
+%% \end{tabular}
+%% \end{center}
+
+Object-based systems can be modelled as multisets of objects and
+messages where the messages define the communication between the
+objects and typically trigger actions of the objects. A class $C$ with
+attributes of \verb|a_1| to \verb|a_n| of sort \verb|Sort_1| to \verb|Sort_n|, and an object {\tt O}
+with attribute values \verb|v_1| to \verb|v_n| of class {\tt C} are written as, respectively
+%
+\begin{lstlisting}[columns=fixed]
+class C | a_1 : Sort_1, ... , a_n : Sort_n .  
+< O : C | a_1 : v_1, ... , a_n : v_n > .
+\end{lstlisting}
+%
+Objects declared together with messages
+\begin{lstlisting}[columns=fixed]
+msgs M_1 ... M_k : Sort_1 ... Sort_n -> Msg .  
+\end{lstlisting}
+form a multiset of the sort \texttt{Configuration}, a subsort of Maude's built-in sort
+\texttt{System},  using \verb|__| for multiset union.
+\begin{lstlisting}[columns=fixed]
+sorts Object Msg Configuration .
+subsort Object Msg < Configuration . 
+op __ : Configuration Configuration -> Configuration [ctor] .
+\end{lstlisting}
+
+A real-time specification \cite{PO07b} consists of a sort \verb|Time|
+(in our case \verb|PosRat|), the constructor
+%
+\verb| {_} : System -> Globalsystem|
+%
+with the meaning that \verb|{t}| represents the whole system (and does not appear
+as an argument to another function - as is marked by using the independent type \texttt{Globalsystem}),
+instantaneous rewrite rules, and a so-called tick rule that defines how time elapses.
+%
+As \cite{PO07}, we use the operators \verb|delta| and \verb|mte| in
+order to define the effect of time elapse on a configuration, and of the
+maximal possible time elapse, resp.
+%
+\begin{lstlisting}[columns=fixed]
+op delta : Configuration Time -> Configuration [frozen (1)] . 
+op mte : Configuration -> TimeInf [frozen (1)] .
+\end{lstlisting}
+Here, \texttt{TimeInf} is the sort \texttt{Time} enriched with an infinity element
+\texttt{Inf}. These two functions are distributed
+over objects and messages, i.e., each
+object has the same time available, and as the maximal time elapse
+for a message has value 0, time can only progress once all messages
+are consumed.
+%
+\begin{lstlisting}[columns=fixed]
+vars CON1 CON2 : NeConfiguration . var R : Time .
+eq delta(none, R) = none .
+eq delta(CON1 CON2, R) = delta(CON1,R) delta(CON2,R) . 
+eq mte(none) = INF .
+eq mte(CON1 CON2) = min(mte(CON1),mte(CON2)) .
+\end{lstlisting}
+%
+The argument {\tt R} of type {\tt Time} is determined by the tick rule 
+%
+\begin{lstlisting}
+crl [tick] : {CURRENT} => {delta(CURRENT,R)} in time R 
+                if R <= mte(CURRENT) [nonexec] .
+\end{lstlisting}
+%
+The default tick time is defined by
+\begin{lstlisting}[columns=fixed]
+(set tick def 1 .) 
+\end{lstlisting}
+%
+This means we look at the configuration either at each time step, or
+more often in the case that some event occurs, for a justification see
+e.g.\ \cite{PO06}.
+
+
+%% For a theoretical justification of this approach as well as completeness results see  e.g. \cite{PO06}.
+%%Meseguer and O show in [completenesspaper] under which conditions
+%%the specification is time robust and therefore complete.
+%% In the next section we will give additional domain specific equations
+%% for \verb|delta| and \verb|mte| which define the behaviour of all
+%% objects involved.

@@ -1,0 +1,92 @@
+(tomod ERTMS8 is protecting NAT-TIME-DOMAIN .
+       protecting DISCRETE-SINGLE-TRAIN16 .
+       protecting INTERLOCKING4 .
+       protecting RADIOBLOCKPROCESSOR3 .
+
+ vars T1,I1 : Oid .
+ 
+ ops initialstate1 initialstate2 initialstate3 : -> GlobalSystem .
+ ops initialintstate initialintstate2 : -> Configuration .
+ ops initialtrainstate1 initialtrainstate2 : -> Configuration .
+ ops initialrbcstate1 initialrbcstate2 : -> Configuration .
+
+ eq initialintstate = < inter1 : Inter | state : idle, reqid : 0 , t0 : true, t1 : false, t2 : false, t3 : false, t4 : false > .
+ eq initialintstate2 = < inter1 : Inter | state : idle, reqid : 0 , t0 : true, t1 : false, t2 : false, t3 : true, t4 : false > .
+ eq initialrbcstate1 = < rbc1 : RBC | state : rbcidle, lasttrain : train1,  ma : (train1 |-> 49), pos : (train1 |-> 0) , curreq : empty > .
+ eq initialrbcstate2 = < rbc1 : RBC | state : rbcidle, lasttrain : train1,  ma : (train1 |-> 49,train2 |-> 199), pos : (train1 |-> 0, train2 |-> 150) , curreq : empty > .
+ rl [inittr1] : initialtrainstate1 => < train1 : Train | state : acc, dist : 0, speed : 0, ac : 1, ma : 49, tseg : 0 , maxspeed : 4 > .
+ rl [inittr2] : initialtrainstate2 => < train2 : Train | state : acc, dist : 150, speed : 0, ac : 1, ma : 199, tseg : 3 , maxspeed : 7 > .
+
+*** eq initialstate = {initialtrainstate1 initialtrainstate2 initialintstate initialrbcstate} . 
+ eq initialstate1 = {initialtrainstate1 initialintstate  initialrbcstate1} .
+*** eq initialstate1 = {initialtrainstate1 initialrbcstate1} .  
+ eq initialstate2 = {initialtrainstate1 initialtrainstate2 initialintstate2  initialrbcstate2} . 
+ eq initialstate3 = {initialtrainstate1} . 
+
+endtom) 
+
+
+
+***(tfrew initialstate1 in time <= 19 .)
+***(tfrew initialstate1 in time <= 20 .)
+***(tfrew initialstate1 in time <= 25 .)
+***(tfrew initialstate3 in time <= 21 .)
+***(trew initialstate2 in time <= 22 .)
+***(trew initialstate2 in time <= 200 .)
+
+(trew initialstate2 in time <= 1 .)
+(trew initialstate2 in time <= 2 .)
+(trew initialstate2 in time <= 3 .)
+(trew initialstate2 in time <= 4 .)
+(trew initialstate2 in time <= 5 .)
+(trew initialstate2 in time <= 6 .)
+(trew initialstate2 in time <= 7 .)
+(trew initialstate2 in time <= 8 .)
+(trew initialstate2 in time <= 9 .)
+(trew initialstate2 in time <= 10 .)
+(trew initialstate2 in time <= 11 .)
+(trew initialstate2 in time <= 12 .)
+(trew initialstate2 in time <= 13 .)
+(trew initialstate2 in time <= 14 .)
+(trew initialstate2 in time <= 15 .)
+(trew initialstate2 in time <= 16 .)
+(trew initialstate2 in time <= 17 .)
+(trew initialstate2 in time <= 18 .)
+(trew initialstate2 in time <= 19 .)
+(trew initialstate2 in time <= 20 .)
+(trew initialstate2 in time <= 22 .)
+(trew initialstate2 in time <= 23 .)
+(trew initialstate2 in time <= 24 .)
+(trew initialstate2 in time <= 25 .)
+(trew initialstate2 in time <= 26 .)
+(trew initialstate2 in time <= 27 .)
+(trew initialstate2 in time <= 28 .)
+(trew initialstate2 in time <= 29 .)
+(trew initialstate2 in time <= 30 .)
+(trew initialstate2 in time <= 31 .)
+(trew initialstate2 in time <= 32 .)
+(trew initialstate2 in time <= 33 .)
+(trew initialstate2 in time <= 34 .)
+(trew initialstate2 in time <= 35 .)
+(trew initialstate2 in time <= 36 .)
+(trew initialstate2 in time <= 37 .)
+(trew initialstate2 in time <= 38 .)
+(trew initialstate2 in time <= 39 .)
+(trew initialstate2 in time <= 40 .)
+(trew initialstate2 in time <= 41 .)
+(trew initialstate2 in time <= 42 .)
+(trew initialstate2 in time <= 43 .)
+(trew initialstate2 in time <= 44 .)
+(trew initialstate2 in time <= 45 .)
+(trew initialstate2 in time <= 46 .)
+(trew initialstate2 in time <= 47 .)
+(trew initialstate2 in time <= 48 .)
+(trew initialstate2 in time <= 49 .)
+(trew initialstate2 in time <= 50 .)
+
+
+***(tfrew {grant(1)< rbc1 : RBC | lasttrain : train1,ma : train1 |-> 49,pos : train1 |-> 30,state : wait > < train1 : Train | ac : 1,dist : 35,ma : 49,speed : 4,state : break,tseg : 0 >} in time <= 1 .)
+
+
+***(trew initialstate2 in time <= 10 .)
+***(tfrew initialstate in time <= 200 .) 

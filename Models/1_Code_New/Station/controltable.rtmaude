@@ -1,0 +1,145 @@
+(tomod CONTROLTABLE is protecting NAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting MSGS .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting SET{RouteName} * (sort Set{RouteName} to SetOfNRoutes,
+                                    sort Elt{RouteName} to EltNRoutes) .
+       protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTB,
+                                     sort Entry{Track,Bool} to EntryTB) .
+       protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPB,
+                                     sort Entry{Point,Bool} to EntryPB) .
+       protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRNB,
+                                         sort Entry{RouteName,Bool} to EntryRNB) .
+
+       op clearTracks : RouteName -> SetOfTracks .
+       op normalpts : RouteName -> SetOfPoints .
+       op reversepts : RouteName -> SetOfPoints .
+       op checkClear : RouteName MapTB -> Bool .
+       op checkClearAux : SetOfTracks MapTB -> Bool .  
+       op RoutePointsSet : RouteName MapPB MapPB -> Bool .
+       op RoutePointsSetAux : SetOfPoints MapPB -> Bool .
+       ops setPointsNormal setPointsReverse : RouteName MapPB -> MapPB .
+       ops setPointsAux setPointsAux : SetOfPoints MapPB -> MapPB .
+       op setRoute : RouteName MapRNB -> MapRNB .
+       op opposingRoutes : RouteName -> SetOfNRoutes .
+       op opposingRoutesSet : RouteName MapRNB -> Bool .
+       op opposingRoutesSetAux : SetOfNRoutes MapRNB -> Bool .
+       op unsetRoutes : SetOfNRoutes MapRNB -> MapRNB .
+       op nextTRoute : Track MapPB MapPB -> TRoute .
+       op initialNRouteSet : MapRNB -> Bool .
+       op getInitialNRoute : MapRNB -> RouteName .
+       op continuation : RouteName MapRNB -> RouteName .
+       op nextRouteSet : RouteName MapRNB -> Bool . 
+       *** operations to release a route and check whether if a track segment release a route
+       op releaseRoute : Track MapRNB -> MapRNB .
+       op routeRelease : Track -> Bool .
+
+       var MAPTB1 : MapTB .
+       vars MAPPB1, MAPPB2 : MapPB .
+       vars MAPRNB1 : MapRNB .
+       var AN : Track .
+       var SETRN1 : SetOfNRoutes .
+       var SETT1 : SetOfTracks .
+       var PN : Point .
+       var RouteNameN : RouteName .
+       var DT : Nat .    
+       var SETP1 : SetOfPoints .
+ 
+       eq clearTracks(RouteName1A) = (AA, AB, AC) . 
+       eq clearTracks(RouteName1B) = (AA, AB, BC) . 
+
+       eq clearTracks(RouteName2) = (BD, AE, AF) .
+       eq clearTracks(RouteName3) = (AD, AE, AF) .
+       eq clearTracks(RouteName4) = (Exit) .     
+
+       eq normalpts(RouteName1A) = (P1) .
+       eq reversepts(RouteName1A) = empty .
+       eq normalpts(RouteName1B) = empty .
+       eq reversepts(RouteName1B) = (P1) .
+       eq normalpts(RouteName2) = empty .
+       eq reversepts(RouteName2) = (P2) .
+       eq normalpts(RouteName3) = (P2) .
+       eq reversepts(RouteName3) = empty .
+       eq normalpts(RouteName4) = empty .
+       eq reversepts(RouteName4) = empty .
+
+       *** The following defines a set of opposing routes for each route.              
+       eq opposingRoutes(RouteName1A) = (RouteName1B) .
+       eq opposingRoutes(RouteName1B) = (RouteName1A) .
+       eq opposingRoutes(RouteName2) = (RouteName3) .
+       eq opposingRoutes(RouteName3) = (RouteName2) .
+       eq opposingRoutes(RouteName4) = empty .
+
+       *** For a given route and a map containing the routes set we can compute whether an opposing route is set.
+       eq opposingRoutesSet(RouteNameN, MAPRNB1) = opposingRoutesSetAux(opposingRoutes(RouteNameN), MAPRNB1) .
+       eq opposingRoutesSetAux((RouteNameN, SETRN1), MAPRNB1) = MAPRNB1[RouteNameN] or opposingRoutesSetAux(SETRN1, MAPRNB1) .
+
+       *** We can check whether the track segments within a route are clear.
+       eq checkClear(RouteNameN,MAPTB1) = checkClearAux(clearTracks(RouteNameN), MAPTB1) .
+       eq checkClearAux((AN , SETT1),MAPTB1) = (not MAPTB1[AN]) and checkClearAux(SETT1, MAPTB1) .
+       eq checkClearAux(empty,MAPTB1) = true .
+
+       *** Set the Points for a given route
+       eq RoutePointsSet(RouteNameN,MAPPB1,MAPPB2) = RoutePointsSetAux(normalpts(RouteNameN),MAPPB1) and RoutePointsSetAux(reversepts(RouteNameN),MAPPB2) .
+       eq RoutePointsSetAux((PN, SETP1),MAPPB1) = MAPPB1[PN] and RoutePointsSetAux(SETP1,MAPPB1) .
+       eq RoutePointsSetAux(empty,MAPPB1) = true .
+       
+       eq setPointsNormal(RouteNameN,MAPPB1) = setPointsAux(normalpts(RouteNameN),MAPPB1) .
+       eq setPointsReverse(RouteNameN,MAPPB1) = setPointsAux(reversepts(RouteNameN),MAPPB1) .
+       eq setPointsAux((PN, SETP1),MAPPB1) = insert(PN,true,setPointsAux(SETP1, MAPPB1)) .
+       eq setPointsAux(empty, MAPPB1) = MAPPB1 .
+       
+       *** Unset the points for a given route
+       eq unsetRoutes(empty, MAPRNB1) = MAPRNB1 .  
+       eq unsetRoutes((RouteNameN,SETRN1), MAPRNB1) = unsetRoutes(SETRN1,insert(RouteNameN, false, MAPRNB1)) .  
+       eq setRoute(RouteNameN,MAPRNB1) = unsetRoutes(opposingRoutes(RouteNameN), insert(RouteNameN, true, MAPRNB1)) . 
+     		 
+       *** Compute the next route for a given route
+       eq continuation(RouteName1A, MAPRNB1) = RouteName3 .
+       eq continuation(RouteName1B, MAPRNB1) = RouteName2 .
+       eq continuation(RouteName2, MAPRNB1) = RouteName4 .
+       eq continuation(RouteName3, MAPRNB1) = RouteName4 .
+      
+       *** Compute whether the next route is set
+       eq nextRouteSet(RouteName1A, MAPRNB1) = MAPRNB1[RouteName3] .
+       eq nextRouteSet(RouteName1B, MAPRNB1) = MAPRNB1[RouteName2] .
+       eq nextRouteSet(RouteName2, MAPRNB1) = MAPRNB1[RouteName4] .
+       eq nextRouteSet(RouteName3, MAPRNB1) = MAPRNB1[RouteName4] .
+
+       *** Compute the next topological route given a track segment with a point and the current point settings     
+       ceq nextTRoute(AB ,MAPPB1, MAPPB2) = R1 if MAPPB1[P1] and not MAPPB2[P1] .
+       ceq nextTRoute(AB ,MAPPB1, MAPPB2) = R2 if not MAPPB1[P1] and MAPPB2[P1] .
+
+   *** nroutenext(RouteNameN,MAPPB1,MAPPB2)
+
+       eq initialnroute(R1) = RouteName1A .
+       eq initialnroute(R2) = RouteName1B .
+
+       op randomRoute : -> RouteName .
+       eq randomRoute = RouteName1A .
+       eq randomRoute = RouteName1B .
+       eq randomRoute = RouteName2 .
+       eq randomRoute = RouteName3 .
+       eq randomRoute = RouteName4 .
+       
+       eq initialNRouteSet(MAPRNB1) = MAPRNB1[RouteName1A] or MAPRNB1[RouteName1B] .
+       ceq getInitialNRoute(MAPRNB1) = RouteName1A if MAPRNB1[RouteName1A] .
+       ceq getInitialNRoute(MAPRNB1) = RouteName1B if MAPRNB1[RouteName1B] .
+
+       eq routeRelease(AC) = true .
+       eq routeRelease(BC) = true .
+       eq routeRelease(AF) = true .
+       eq routeRelease(Exit) = true .
+       eq routeRelease(AN) = false [owise] .         
+       
+       eq releaseRoute(AC, MAPRNB1) = insert(RouteName1A, false, MAPRNB1) .
+       eq releaseRoute(BC, MAPRNB1) = insert(RouteName1B, false, MAPRNB1) .
+       eq releaseRoute(AF, MAPRNB1) = insert(RouteName2, false, insert(RouteName3, false, MAPRNB1)) .
+       eq releaseRoute(Exit, MAPRNB1) = insert(RouteName4, false, MAPRNB1) .
+
+endtom)
+
+

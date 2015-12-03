@@ -1,0 +1,77 @@
+(tomod MODEL-CHECK-ERTMS is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting ERTMS .
+
+  ops train-cons train-acc train-stop train-brake : Oid -> Prop [ctor] .
+
+  vars O1,O2,O1',O2',O3,O4,O5,O6 : Oid .
+  vars N1,N2,N1',N2' : Nat .
+  var R : Time .
+  var B : Bool .
+  vars T1,T2,T1',T2' : Track .
+  var P : Prop .
+
+  vars REST,REST2 : Configuration .
+  var OBJREST : ObjectConfiguration .
+  var MREST : MsgConfiguration .   
+     
+  ops train-s train-d train-ma : Oid Nat -> Prop [ctor] .
+  op nocrash : Oid Oid -> Prop [ctor] .
+  op nocrashl : Track Oid -> Prop [ctor] .
+  op nocrashr : Oid Track -> Prop [ctor] .
+  op pointma : Oid -> Prop [ctor] .
+  ops pointnormal pointreverse : -> Prop [ctor] .
+ 
+*** No overlapping movement authorities
+  
+  eq { REST  < O1 : Train |  tseg : T1 > } |= nocrash(O1',O2') = (not O1 == O1') or {REST} |= nocrashl(T1,O2')  .
+  eq { REST  < O2 : Train |  tseg : T1 > } |= nocrash(O1',O2') = (not O2 == O2') or {REST} |= nocrashr(O1',T1) . 
+  eq { REST  < O1 : Train |  tseg : T2  > } |= nocrashl(T1,O1') = (not O1 == O1') or  not T1 == T2  .
+  eq { REST  < O2 : Train |  tseg : T1 > } |= nocrashr(O2', T2) =  (not O2 == O2') or not T1 == T2 . 
+
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrashl(T1,O1) = true .
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrashr(O1', T1) = true  .  
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrash(O1',O2') = true . 
+
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrashl(T1,O1) = true .
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrashr(O1',T1) = true  .  
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > < O6 : ExternalTrains | > } |= nocrash(O1',O2') = true . 
+ 
+
+*** Satisfaction definition for point normal and reverse properties
+ 
+***  eq { REST   < O4 : Inter | p1n : B >  } |= pointnormal = B .
+***  eq { REST   < O4 : Inter | p1r : B >  } |= pointreverse = B .
+
+*** Rewriting rules to deal with intermediate and initial states
+  eq {nroute(REST)REST2} |= P = {REST REST2} |= P .
+  eq {trackseg(REST)REST2} |= P = {REST REST2} |= P .
+  eq {delta(REST)REST2} |= P = {REST REST2} |= P . 
+  eq initialstate2 |= P = true .  
+  eq initialstate1 |= P = true .
+  eq {initialcontrollerstate REST} |= P = true .
+  eq {initialintstate REST} |= P = true .
+  eq {initialtrainstate1 REST} |= P = true .
+  eq {initialtrainstate2 REST} |= P = true .
+  eq {initialrbcstate REST} |= P = true .
+  eq {initialrbcstate2 REST} |= P = true .
+  vars M1,M2,M1',M2',D1,D2,D1',D2' : Nat .
+    
+endtom)
+
+
+(mc initialstate1 |=t [] nocrash(train1,train2)  in time <= 100 .) 
+***(mc initialstate1 |=t [] nomaoverlap(train2,train1)  in time <= 150 .) 
+
+***(mc initialstate1 |=u [] nomaoverlap(train1,train2)  .) 
+***(mc initialstate1 |=u [] nomaoverlap(train1,train2)  .) 
+
+
+***(mc initialstate1 |=t [] (pointma(train1) => pointnormal) in time <= 0 .)
+***(mc initialstate1 |=u [] (pointma(train1) => pointnormal)  .)
+***(mc initialstate1 |=u [] (pointma(train2) => pointreverse) .)
+
+
+

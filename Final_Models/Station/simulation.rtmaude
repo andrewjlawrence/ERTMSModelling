@@ -1,0 +1,104 @@
+--- in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in controller.rtmaude .
+in msgs.rtmaude .
+in interlocking.rtmaude .
+in train.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+*** run train on tracksegment AA with a MA until 1498.
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 60 >  } in time <= 39 .)
+
+
+***(
+Result ClockedSystem :
+  {< inter1 : Inter | occ : AA |-> true,pointPositions :(P1 |-> normal, P2 |->
+    normal),pointslocked : empty,routeset : empty > < train1 : Train | ac : 1,
+    dist : 1499446241/2000000,ma : 1498,maxspeed : 60,speed : 38671/1000,state
+    : brake,tseg : AA >} in time 38671/1000
+)
+
+
+*** MA = 1498 -> dist = 749.72 (exactly before being half way through). 
+
+*** one time step later: a marequest will be issued.
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 60 >  } in time <= 40 .)
+
+***(
+Result ClockedSystem :
+  {marequest(train1,AA)< inter1 : Inter | occ : AA |-> true,pointPositions :(P1
+    |-> normal, P2 |-> normal),pointslocked : empty,routeset : empty > < train1
+    : Train | ac : 1,dist : 1575788241/2000000,ma : 1498,maxspeed : 60,speed :
+    37671/1000,state : brake,tseg : AA >} in time 39671/1000
+) 
+
+
+*** now the system cannot proceed unless we include an (here trivial) rbc in the configuration:
+
+***  show that train comes to still stand
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 60 >
+     < rbc1 : RBC | availableRoutes : empty , designatedRoutes : empty  >
+} in time <= 78 .)
+
+
+
+***(
+Result ClockedSystem :
+  {< inter1 : Inter | occ : empty,pointPositions :(P1 |-> normal, P2 |->
+    normal),pointslocked : empty,routeset : empty > < rbc1 : RBC |
+    availableRoutes : empty,designatedRoutes : empty > < train1 : Train | ac :
+    1,dist : 1497446241/1000000,ma : 1498,maxspeed : 60,speed : 0,state :
+    stop,tseg : AA >} in time 38671/500
+) 
+--- stops at dist = 1497.46
+
+--- To continue now lets as assume that we start in the situation where the first marequest has been issued and
+--- assume that Route3 is available. (Note the current position is on Route1A, thus Route 3 is a natural follow up.]
+
+
+(trew {marequest(train1,AA)
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal),
+     routeset : RouteName2 |-> false, RouteName3 |-> true , occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : brake, dist : 760, speed : 37, ac : 1,  ma : 1498, tseg : AA , maxspeed : 60 >
+     < rbc1 : RBC | availableRoutes : (RouteName3) , designatedRoutes : empty  >
+    } in time <= 1 .)
+
+
+--- now the MA got extended to 6499, P2 got locked.
+
+
+
+(trew {marequest(train1,AA)
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal),
+     routeset : RouteName2 |-> false, RouteName3 |-> true , occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : brake, dist : 760, speed : 37, ac : 1,  ma : 1498, tseg : AA , maxspeed : 60 >
+     < rbc1 : RBC | availableRoutes : (RouteName3) , designatedRoutes : empty  >
+    } in time <= 17 .)
+
+
+
+***(
+Result ClockedSystem :
+  { < inter1 : Inter | occ : (AA |-> false, AB |-> true),pointPositions :(P1 |-> normal, P2 |->
+    normal),pointslocked : P2 |-> true, routeset : RouteName2 |-> false, RouteName3 |-> false >
+    < rbc1 : RBC | availableRoutes : empty, designatedRoutes : empty > < train1 : Train | ac :
+    1,dist : 3001/2, ma : 6499,maxspeed : 60,speed : 52,state :
+    acc,tseg : AB >} in time 17
+)
+
+--- MA updated, demonstrates tracksegment transition to AB as well, speed has further increased to 52.
+
+
+

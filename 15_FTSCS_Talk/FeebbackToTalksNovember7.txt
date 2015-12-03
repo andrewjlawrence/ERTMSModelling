@@ -1,0 +1,70 @@
+Talk was well received.
+Meseguer thanked afterwards for explaining ERTMS well.
+Advantages of simulation in Real-time-maude; having the Objects present.
+
+General questions:
+- Security aspect of RBC, verification of security protocol.
+- In China, move to moving blocks (Level 3).
+- Comment: Level 3 will never be realized due to using GPS (Ansaldo)
+- How many trains modeled. Answer 2, theoretical result that two suffice.
+
+
+For me: Revise/check, not necessarily to be done now.
+1) 40 meter distance, not done in modelleing: Once a train is on AD, another train gets a MA until end of AC. This should lead to an error.
+2) Only allow system to go into acc state, when MA is actively extended.
+We claim that in justification of non-zenoness, but our modelling just checks the difference. -> +1 needed to avoid scuttering.
+3) eat MArequest -> shouldn't it be under a delta?
+4) Doublecheck "acceleration/deceleration takes the same distance"- braking is faster.
+5) Add README file: to explain order,
+                               and which files to try, s
+                               different controler
+6) would controller cycle of 10 make it faster?
+
+			       
+Discussion with Jose:
+=====================
+- Generalize mte result to timesampling before and after an interesting event;
+- use float to compute sqrt.
+
+Discussion with Peter
+=====================
+
+- Q: I answered question: why error in sampling error cannot add up. Because at all timetick it is measured precisely, only when the additional measurement is taken...
+- Q: why are integers not enough? eg modelling in cms? Because changed of positions has faction (1/2) in it.
+- once revised we should send him sources.
+- thinks we should not bother about timesampling,  or a theoretical result about it, as long as we can argue that no event is missed.
+- approximation to keep size small - do not stress it - float?
+- (!) all delta rules should be equations apart from the tick rule.
+[Note we are having rules, because the acc rule eg involves also statechanges. This would not be an argument for separating the rules and the equations, but see difficulty below....]
+- Q: Could we add train length? Or argue why not needed.
+- error injection - why not via simulation, why modellchecking done? Modellchecking seems to be an overkill.
+
+
+Remark on earlier modelling decisions:
+======================================
+- Suggestions: Do state changes instantaneously when condition is fullfilled.
+I had my reasons, not to do that, but it might be interesting to try out.
+Reason: (1) when exactly should this happenen when R is only measured approximately. (2) if in intervall - could then several transitions happened? By doing it explicitely, deterministic behaviour.
+- Newton method, to better control approximation?
+- error on case: speed = 0 (factor 2) - this might make +1 necessary.
+- Truncation could cause error; instead of measuring late, it could happen that we measure before the event.
+
+- Generally, measuring tracksegment transition late, is no problem.
+- How is it with starting breaking earlier, this changes the behavior. Should we ask Siemens  when they would be starting to break? Should we start breaking at a full second?
+- it is an modellig error not to send a MA request then changing to breaking.
+
+
+Needed
+======
+Having good simulations files available.
+- trew command (see simulation.rtmaude file, run-all.files)
+- tsearch command (see run-train-scen-new.rtmaude (does not load; tsearch?)
+- mc commands
+
+
+Todo:
+=====
+- check error with distance first.
+- answer re delta equation?
+
+We have 2-3 weeks for preparing final version. And invitation to journal submission is agreed.

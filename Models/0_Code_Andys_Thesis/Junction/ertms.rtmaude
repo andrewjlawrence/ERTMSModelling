@@ -1,0 +1,35 @@
+(tomod ERTMS is protecting NAT-TIME-DOMAIN .
+       protecting DISCRETE-SINGLE-TRAIN .
+       protecting INTERLOCKING .
+       protecting RADIOBLOCKPROCESSOR .
+       protecting CONTROLLER .
+
+
+ vars T1,I1 : Oid .
+
+ 
+ ops initialstate1 initialstate2 initialstate3 : -> GlobalSystem .
+ ops initialintstate initialintstate2 : -> Configuration .
+ ops initialtrainstate1 initialtrainstate2 : -> Configuration .
+ ops initialrbcstate initialrbcstate2 : -> Configuration .
+ ops initialcontrollerstate : -> Configuration .
+
+
+eq initialcontrollerstate = < ctr1 : Controller |  trainorder : (train1  train2 ),  trainmax : ((train1 |-> 5,train2 |-> 3)), trainroute : ((train1 |-> 1,train2 |-> 2))   > .
+
+ eq initialintstate = < inter1 : Inter | state : idle, reqseg : 0 , reqroute : 0, route : 1,  t0 : false, t1 : false, t2 : false, t3 : false, t4 : false, t5 : false, t6 : false, p1n : true , p1r : false > .
+ eq initialrbcstate = < rbc1 : RBC | state : rbcidle, lasttrain : train1,  ma : empty , pos : empty , curreq : empty , join : false ,route : empty , curroute : 1 , reqroute : 0 > .
+ rl [inittr1] : initialtrainstate1 => < train1 : Train | state : acc, dist : 0, speed : 0, ac : 1, ma : 49, tseg : 0 , maxspeed : 4 > .
+ rl [inittr2] : initialtrainstate2 => < train2 : Train | state : acc, dist : 150, speed : 0, ac : 1, ma : 199, tseg : 3 , maxspeed : 7 > .
+ 
+
+ eq initialstate1 = {initialcontrollerstate 
+    		     initialrbcstate
+		     initialintstate
+} .
+
+
+endtom) 
+
+(trew initialstate1 in time <= 50 .)
+

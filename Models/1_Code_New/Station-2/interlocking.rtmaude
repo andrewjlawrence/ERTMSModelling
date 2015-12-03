@@ -1,0 +1,28 @@
+*** This file contains a module modelling a solid state interlocking
+
+(tomod INTERLOCKING is protecting NAT-TIME-DOMAIN . 
+   protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTB,
+                               sort Entry{Track,Bool} to EntryTB) .
+   protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPB,
+                               sort Entry{Point,Bool} to EntryPB) .
+   protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRNB,
+                               sort Entry{RouteName,Bool} to EntryRNB) .
+   protecting MAP{Point,PointPos} * (sort Map{Point,PointPos} to MapPointPos,
+                                     sort Entry{Point,PointPos} to EntryPointPos) .
+
+   protecting TOPOLOGY .
+   protecting CONTROLTABLE .
+
+   class Inter |  routeset : MapRNB, pointslocked : MapPB, occ : MapTB, pointpos : MapPointPos .
+
+  *** Rules to deal with the transition of time.
+  eq mte(< O : Inter | >) = 1 .
+  *** The interlocking always acts instantaneously.
+  rl [deltainter] : delta(< O : Inter | occ : MAPTB1  >) => < O : Inter | >  .
+
+  *** Rules to deal with the controller setting a route. The interlocking receives a route to be set and then sets the route if no opposing routes are locked.
+  ceq  routeset(RouteName1) < O : Inter | state : idle , routeset : MAPRNB1, routelocked : MAPRNB2, occ : MAPTB1, pointpos : >  = < O : Inter | state : idle , routeset : setRoute(RNam1, MAPRNB1), pointpos : setpoints() > routeset(setRoute(RouteName1, MAPRNB1)) if (not opposingPointsSet(RouteName1, MAPRNB1)) or checkClear(RouteName1,MAPTB1)  .
+
+
+endtom)
+

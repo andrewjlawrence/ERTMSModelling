@@ -1,0 +1,117 @@
+(tomod MODEL-CHECK-ERTMS is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting ERTMS .
+
+  ops train-cons train-acc train-stop train-brake : Oid -> Prop [ctor] .
+
+  vars O1,O2,O1',O2',O3,O4,O5 : Oid .
+  vars N1,N2,N1',N2' : Nat .
+  var R : Time .
+  var B : Bool .
+
+
+  vars REST,REST2 : Configuration .
+  var OBJREST : ObjectConfiguration .
+  var MREST : MsgConfiguration .   
+   
+    
+  ops train-s train-d train-ma : Oid Nat -> Prop [ctor] .
+  op nomaoverlap : Oid Oid -> Prop [ctor] .
+  op nomaoverlapl : Nat Nat Oid -> Prop [ctor] .
+  op nomaoverlapr : Oid Nat Nat -> Prop [ctor] .
+  op pointma : Oid -> Prop [ctor] .
+  ops pointnormal pointreverse : -> Prop [ctor] .
+  op noolap : Nat Nat Nat Nat -> Bool . 
+  op falseprop : Oid -> Prop [ctor] .
+  op blah : Oid -> Prop [ctor] .
+  ops lessdist, lessdist2 : Oid Oid -> Prop [ctor] .
+  op geqdist : Oid Oid -> Prop [ctor] .
+
+  op ptnomove : -> Prop [ctor].
+  op ptma : Nat Nat -> Bool .
+  
+  eq noolap(D1,M1,D2,M2) = ((D1 <= M1) and (D2 <= M2)) implies (M1 < D2) . 
+  var P : Prop .
+
+  eq ptma(D1,M1) = (D1 <= 149) and (149 <= M1) . 
+
+*** eq {REST < O1 : Train | ma : M1, dist : D1 > < O2 : Train | ma : M2, dist : D2 >} |= ma-overlap(O1',O2') = (O1 == O1') and (O2 == O2') and noolap(D1,M1,D2,M2) .   
+ 
+*** A point is in a movement authority
+  
+  eq {REST} |= falseprop(O1') = false .
+  eq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= pointma(O2) =  ptma(D1,M1)  . 
+  ceq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= pointma(O1) = {REST} |= pointma(O1) if (not O1 == O2)  . 
+  eq { MREST  < O3 : RBC | >  < O4 : Inter | > < O5 : Controller | > } |= pointma(O1') = false  .
+  eq {  < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= pointma(O1') = false . 
+
+***  eq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= pointma(O1') = ((O2 == O1') implies ptma(D1,M1))   . 
+***  eq { MREST  < O3 : RBC | >  < O4 : Inter | > < O5 : Controller | > } |= pointma(O1') = true  .
+***  eq {  < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= pointma(O1') = true . 
+
+*** dummy safety condition
+
+  eq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= blah(O1') = ((O2 == O1') implies true)  . 
+  eq { MREST  < O3 : RBC | >  < O4 : Inter | > < O5 : Controller | > } |= blah(O1') = true  .
+  eq {  < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= blah(O1') = true .
+ 
+
+*** No overlapping movement authorities
+  
+  eq { REST  < O1 : Train |  dist : D1 , ma : M1 > } |= nomaoverlap(O1',O2') = (not O1 == O1') or {REST} |= nomaoverlapl(D1,M1,O2')  .
+  eq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= nomaoverlap(O1',O2') = (not O2 == O2') or {REST} |= nomaoverlapr(O1',D1,M1) . 
+  eq { REST  < O1 : Train |  dist : D1 , ma : M1 > } |= nomaoverlapl(D2,M2,O1') = (not O1 == O1') or  noolap(D2,M2,D1,M1)  .
+  eq { REST  < O2 : Train |  dist : D1 , ma : M1 > } |= nomaoverlapr(O2', D2,M2) =  (not O2 == O2') or noolap(D1,M1,D2,M2) . 
+
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= nomaoverlapl(D1,M1,O1) = true .
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= nomaoverlapr(O1', D1, M1) = true  .  
+  eq {MREST < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= nomaoverlap(O1',O2') = true . 
+
+
+
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= nomaoverlapl(D1,M1,O1) = true .
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | > } |= nomaoverlapr(O1', D1, M1) = true  .  
+  eq { < O3 : RBC | > < O4 : Inter | > < O5 : Controller | >} |= nomaoverlap(O1',O2') = true . 
+ 
+
+*** Satisfaction definition for point normal and reverse properties
+ 
+  eq { REST   < O4 : Inter | p1n : B >  } |= pointnormal = B .
+  eq { REST   < O4 : Inter | p1r : B >  } |= pointreverse = B .
+
+
+  
+
+*** Rewriting rules to deal with intermediate and initial states
+  eq {trackseg(REST)REST2} |= P = {REST REST2} |= P .
+  eq {nondelta(REST)REST2} |= P = {REST REST2} |= P .
+  eq {delta(REST)REST2} |= P = {REST REST2} |= P . 
+  eq initialstate2 |= P = true .  
+  eq initialstate1 |= P = true .
+  eq {initialintstate REST} |= P = true .
+  eq {initialtrainstate1 REST} |= P = true .
+  eq {initialtrainstate2 REST} |= P = true .
+  eq {initialrbcstate REST} |= P = true .
+  eq {initialrbcstate2 REST} |= P = true .
+  vars M1,M2,M1',M2',D1,D2,D1',D2' : Nat .
+    
+
+endtom)
+
+
+
+***(mc initialstate1 |=u [] nomaoverlap(train2,train1)  .) 
+
+***(mc initialstate1 |=u [] (pointma(train1) => pointnormal)  .)
+(mc initialstate1 |=u [] (pointma(train2) => pointreverse) .)
+
+
+***(mc
+*** 
+*** {< inter1 : Inter | reqid : 0,state : idle,t0 : false,t1 : true,t2 : false,t3 : false,t4 : true > < rbc1 : RBC | curreq : empty,lasttrain :
+***    train2,ma :(train1 |-> 99, train2 |-> 49),pos :(train1 |-> 64, train2 |-> 240),state : rbcidle > < train1 : Train | ac : 1,dist : 68,ma : 99,
+***    maxspeed : 4,speed : 4,state : cons,tseg : 1 > < train2 : Train | ac : 1,dist : 245,ma : 49,maxspeed : 7,speed : 6,state : acc,tseg : 4 >}
+***|=t [] nomaoverlap(train1,train2) in time <= 1 .)
+

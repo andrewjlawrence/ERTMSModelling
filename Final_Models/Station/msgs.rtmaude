@@ -1,0 +1,60 @@
+*******************************
+*** Messages and Data Types ***
+*******************************
+
+(view Oid from TRIV to CONFIGURATION is
+    sort Elt to Oid .
+endv)
+
+(tomod MSGS is 
+   protecting POSRAT-TIME-DOMAIN-WITH-INF .
+   protecting TOPOLOGY .
+   protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTrack2Bool,
+                             sort Entry{Track,Bool} to EntryTrack2Bool) .
+   protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPoint2Bool,
+                             sort Entry{Point,Bool} to EntryPoint2Bool) .
+   protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRouteName2Bool,
+                                 sort Entry{RouteName,Bool} to EntryRouteName2Bool) .
+
+    *** Message from train to interlocking for track transition.
+    msgs tsegtransition : Track Track -> Msg . 
+    
+    *** Message from train to RBC for requesting a movement authority.
+    msgs marequest  : Oid Track -> Msg .
+    
+    *** Route request message from controller to inetlocking.
+    msgs routerequest : RouteName -> Msg .
+
+    *** Message from RBC to interlocking requesting a route.
+    msgs proceedrequest : RouteName -> Msg .
+
+    *** magrant is used by the RBC to grant a movement authority.
+    msg magrant : Oid Nat -> Msg .
+    
+    *** Messages from interlocking to RBC (route data and proceed).
+    msgs setroutes : MapRouteName2Bool -> Msg .
+    msgs proceedgrant : RouteName -> Msg .
+    
+    *** Object Identifiers
+    ops train1 train2 train3 inter1 rbc1 ctr1 : -> Oid [ctor] .
+
+    *** Configurations
+    vars REST,CURRENT : Configuration .
+    vars CON1,CON2 : NEConfiguration .
+ 
+    *** Tick rule:
+    var R : Time .
+    crl [tick] : {CURRENT} => {delta(CURRENT,R)} in time R if R <= mte(CURRENT) [nonexec] .
+
+    *** Time rules (note: more defs for objects incl mte in subsequent files)
+    op delta : Configuration Time -> Configuration [frozen (1)]  .
+    eq delta(none, R) = none .
+    eq delta(CON1 CON2, R) = delta(CON1,R) delta(CON2,R) . 
+     
+    *** The mte operation computes the maximum elapsed time.    	
+    op mte : Configuration -> TimeInf [frozen (1)] .
+    eq mte(none) = INF .
+    eq mte(CON1 CON2) = min(mte(CON1),mte(CON2)) .
+    eq mte(M:Msg) = 0 .
+endtom)
+

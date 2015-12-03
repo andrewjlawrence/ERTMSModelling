@@ -1,0 +1,52 @@
+*** This file contains the messages and background context.
+*** We create a view for object identifiers. To allow for their use in parameterised datastructures like sets.
+
+(view Oid from TRIV to CONFIGURATION is
+    sort Elt to Oid .
+endv)
+
+(tomod MSGS is 
+   protecting NAT-TIME-DOMAIN-WITH-INF .
+   protecting TOPOLOGY .
+ 
+    *** trans is used by a train to communicate to the interlocking that it has transitioned from one tracksegment to another.
+    msgs tsegtrans : Track -> Msg . 
+    msgs leave : Track -> Msg .
+
+    *** marequest is used by a train to request a movement authority from the RBC. 
+    msg marequest  : Oid Track -> Msg .    
+    *** magrant is used to send a new movement authority to a train.
+    msg magrant : Oid Nat -> Msg .    
+
+    var N : Nat .
+    var P : NzNat .       
+   
+*** TODO: Replace with quo
+
+    op _div_ : Nat NzNat -> Nat .         
+    ceq N div P = 0 if P > N .
+    ceq N div P = s((N monus P) div P) if P <= N .  
+ 
+    ops externtrains train1 train2 train3 inter1 rbc1 ctr1 : -> Oid [ctor] .
+
+*** TODO: Place time into another module
+
+    vars REST,CURRENT : Configuration .
+
+    var OCURRENT : ObjectConfiguration .
+    vars CON1,CON2 : NEConfiguration .
+    var MSG1 : Msg .
+
+    op delta : Configuration -> Configuration [frozen]  . 
+    crl [delta0] : {CURRENT} => {delta(CURRENT)} in time 1 if mte(CURRENT) >= 1 .
+    eq [delta1] : delta(CON1 CON2) = delta(CON1)delta(CON2) .
+
+
+*** The mte operation computes the maximum elapsed time.
+    	
+    op mte : Configuration -> TimeInf [frozen (1)] .
+    eq mte(none) = INF .
+    eq mte(CON1 CON2) = min(mte(CON1),mte(CON2)) .
+    eq mte(M:Msg) = 0 .
+
+endtom)

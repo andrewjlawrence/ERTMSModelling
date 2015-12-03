@@ -1,0 +1,75 @@
+--- in real-time-maude.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+in oldcontroller.rtmaude .
+in interlocking.rtmaude .
+in train.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+
+*** run train on tracksegment AA with a MA until 1498. 
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 120 >  } in time <= 39 .)
+
+---1498 -> 749.72 [1499 -> 750.23]
+
+***(
+Result ClockedSystem :
+  {< inter1 : Inter | occ : AA |-> true,pointPositions :(P1 |-> normal, P2 |->
+    normal),pointslocked : empty,routeset : empty > < train1 : Train | ac : 1,
+    dist : 1499446241/2000000,ma : 1498,maxspeed : 120,speed : 38671/1000,state
+    : brake,tseg : AA >} in time 38671/1000
+
+)
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 120 >  } in time <= 40 .)
+
+
+***(
+Result ClockedSystem :
+  {marequest(train1,AA)< inter1 : Inter | occ : AA |-> true,pointPositions :(P1
+    |-> normal, P2 |-> normal),pointslocked : empty,routeset : empty > < train1
+    : Train | ac : 1,dist : 1575788241/2000000,ma : 1498,maxspeed : 120,speed :
+    37671/1000,state : brake,tseg : AA >} in time 39671/1000
+) 
+
+--- output shows that marequest is issued. now the system cannot proceed
+--- until we include an rbc in the configuration:
+
+
+
+--- do not include this one, just for checking
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : (AA |-> true), pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+} in time <= 40 .)
+
+
+--- show that train comes to still stand
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 2, speed : 0, ac : 1,  ma : 1498, tseg : AA , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+} in time <= 78 .)
+
+
+***(
+Result ClockedSystem :
+  {< inter1 : Inter | occ : empty,pointPositions :(P1 |-> normal, P2 |->
+    normal),pointslocked : empty,routeset : empty > < rbc1 : RBC |
+    avaliableRoutes : empty,designatedRoutes : empty > < train1 : Train | ac :
+    1,dist : 1497446241/1000000,ma : 1498,maxspeed : 120,speed : 0,state :
+    stop,tseg : AA >} in time 38671/500
+) 
+---1497.46
+eof .
+

@@ -1,0 +1,54 @@
+*** 
+*** An Interlocking has two states idle and respond (res).
+*** In the idle state the interlocking can receive requests (req) and then it issues either a grant or a deny depending on the state of the track.
+ 
+
+(tomod INTERLOCKING4 is protecting NAT-TIME-DOMAIN . 
+   protecting MSGS .
+  sort InterState .
+  ops idle res :  -> InterState [ctor] .
+  
+  class Inter | state : InterState, reqid : Nat, t0 : Bool , t1 : Bool , t2 : Bool , t3 : Bool , t4 : Bool .
+
+  vars N : Nat .
+  vars P : NzNat . 
+  vars O : Oid .
+  vars B1, B2 : Bool . 
+  var REST : Configuration .
+
+  eq mte(< O : Inter | >) = 1 .
+
+  rl [deltainter] : delta(< O : Inter | >) => < O : Inter | > .
+
+  rl [receivereq] : {req(N) < O : Inter | state : idle > REST} => {< O : Inter | state : res, reqid : N > REST}  .
+  rl [resreq1g] : {< O : Inter | state : res, t1 : false,  reqid : 1 > REST} => {< O : Inter | state : idle > grant(1) REST} .
+  rl [resreq1d] : {< O : Inter | state : res, t1 : true, reqid : 1 > REST} => {< O : Inter | state : idle > deny(1) REST} .
+  rl [resreq2g] : {< O : Inter | state : res, t2 : false, reqid : 2 > REST} => {< O : Inter | state : idle > grant(2) REST} .
+  rl [resreq2d] : {< O : Inter | state : res, t2 : true, reqid : 2 > REST} => {< O : Inter | state : idle > deny(2) REST} .
+  rl [resreq3g] : {< O : Inter | state : res, t3 : false, reqid : 3 > REST} => {< O : Inter | state : idle > grant(3) REST}  .
+  rl [resreq3d] : {< O : Inter | state : res, t3 : true, reqid : 3 > REST} => {< O : Inter | state : idle > deny(3) REST}  .
+  
+  rl [resreq4g] : {< O : Inter | state : res, t4 : false, reqid : 4 > REST} => {< O : Inter | state : idle > grant(4) REST} .
+  rl [resreq4d] : {< O : Inter | state : res, t4 : true, reqid : 4 > REST} => {< O : Inter | state : idle > deny(4) REST} .
+  
+  rl [resreq0g] : {< O : Inter | state : res, t0 : false, reqid : 0 > REST} => {< O : Inter | state : idle > grant(0) REST} .
+  rl [resreq0d] : {< O : Inter | state : res, t0 : true, reqid : 0 > REST} => {< O : Inter | state : idle > deny(0) REST}  .
+  
+*** If we add a timed transition here then it will cause time to progress over the whole system.
+
+  rl [trans1] : {trans(1)< O : Inter | > REST} => {< O : Inter | t0 : false, t1 : true > REST} .
+  rl [trans2] : {trans(2)< O : Inter | > REST} => {< O : Inter | t1 : false, t2 : true > REST} .
+  rl [trans3] : {trans(3)< O : Inter | > REST} => {< O : Inter | t2 : false, t3 : true > REST} .
+  rl [trans4] : {trans(4)< O : Inter | > REST} => {< O : Inter | t3 : false, t4 : true > REST} .
+  rl [trans0] : {trans(0)< O : Inter | > REST} => {< O : Inter | t4 : false, t0 : true > REST} .
+
+
+endtom)
+
+(trew {req(3) < O : Inter | state : idle, reqid : 0, t0 : true, t1 : true, t2 : true, t3 : true, t4 : true >} in time <= 3 .) 
+ 
+(trew {req(1) < O : Inter | state : idle, reqid : 0 , t0 : false, t1 : false, t2 : false, t3 : false, t4 : false >} in time <= 3 .) 
+
+(trew {trans(1) < O : Inter | state : idle, reqid : 0 , t0 : true, t1 : false, t2 : false, t3 : false, t4 : false >} in time <= 3 .) 
+
+

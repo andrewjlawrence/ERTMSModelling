@@ -1,0 +1,304 @@
+Our Points:
+
+Models on publications page + Models section. ***Phil***
+-- Model files contains comments on author, date, version and tool.
+-- CSPB (Hafai, STTT, SCP, AVoCS)
+-- CSP  
+-- CASL
+-- RT-Maude (FTSCS)
+
+DONE: Discussion with Monika on Satefy Distance (speed in meters per?).
+
+DONE: Revised trains model?
+I looked through all the rules again, the general conditional behavior
+- ok.  The acc cases fuer S=0, and brake->acc, and 0 to acc could be
+done better - but I prefer to leave that for now. With regard to
+non-zenoness: It would be better to allow transition to acc only when
+there is a MAgranted message present.
+
+DONE: Equations vs Re-write rules. ***Phil First Attempt / Joint reading of models***
+
+Phil -- available in all files!!!
+
+Phil -- change max speed to 50m/s and also check safety distance arguement 100m!
+
+MR -- Future work: optimizing model checking. DONE
+
+----------- REVIEW 1 -----------
+This paper deals with the formal modeling and analysis in Real-Time
+Maude of parts of the ERTMS/ETCS interlocking system for controlling
+the movement of trains. The specification is simulated both in the
+presence of safe interlocking tables and in erroneous ones. The
+simulation shows that errors are detected already by simulation when
+the wrong tables are used.
+
+It is less clear what the model checking does. 
+DONE *** MR ***
+
+On the positive side:
+
++ The paper is well written.
+
++ As far as I know, this is the fist time Maude or Real-Time Maude
+has been used in the train domain, so there is sufficient novel
+contribution in the paper. 
+DONE *** MR ***
+
++ Seems to cover "all ERTMS subsystems," whatever that means.
+DONE  *** MR ***
+
++ A perfect fit for the workshop.
+
++ Underlying work seems to involve industrial collaboration.
+
+On the negative side:
+
+DONE: There is a nontrivial but neither very serious problem in the modeling:
+some actions (dynamic behaviors), that should be modeled as rewrite rules,
+are modeled as equations. This is not only conceptually ugly, but might also
+question some results of the analysis. I am talking about the "equation" on the bottom
+of page 8, where a message "routeRequest" is read and consumed, which is a clearly
+a dynamic irreversible "action", yet is modeled as an equation. The same applies
+to the "equation" on the middle of page 9.  *** Phil (see above)***
+
+- The analysis is unsatisfactory. The good thing is that the paper analyzes
+a "correct" scheme plan and then "uncorrect" scheme plans. Already simulation
+finds the error in the latter.  Fine. But the model checking part is essentially
+absent. What is the model checking command? What were the results of the model
+checking? Did you model check both the correct and incorrect settings? 
+DONE *** MR ***
+
+- There are a number of fairly simplifying assumptions, but I guess that is
+OK in a first analysis of such a complex system. *** MR ***
+
+Detailed comments: *** Phil ***
+
+Introduction:  in general, could you introduce the problem in a sentence or two
+for the non-expert? What is an interlocking *** MR ? ***
+
+Done: Page 1, next-to-last paragraph: "these systems can be treated": what does
+"these" refer to? 
+
+Done: Page 2, paragraph 2:
+- "Objective"  >>> "The objective"
+- "modelling is open" >>> "model is open"
+
+Done: (no longer there) paragraph 3:
+- "approach, as has" >>> "approach that has"
+
+Done: paragraph 4:
+- "next section" is meant to refer to Section 5, but of course points to Section 2.
+Just write "Section 5".
+
+Done: paragraph 5:
+- "location specific" >>> "location-specific"
+
+Done: paragraph 6:
+- "well established" >>> "well-established"
+("It is well established that ..." is correct, but a hyphen is typically
+needed when used as a adjective "A well-etsablished concept")
+
+Done: Page 3, paragraph 1:
+- "a a" >>> "a"
+- (and other places, e.g., footnote 5): "set^4.": the footnote marker should come AFTER the period.
+- footnote 4: "decision, if" >>> "decision whether"
+
+Done: Page 5, paragraph 2:
+- remove "(in meters)"
+
+
+Done: paragraph 4:
+- "A class C ..." should be "A class C with attributes a_1 to a_2 of sort ..."
+- use "and an object O with attribute vaues v_1 to v_n of class C are written as, respectively"
+
+Done: Page 6, paragraph 1:
+-line 1: add "declared" at end of first line
+- "concatenation" >>> "multiset union"  (concatenation is for lists)
+
+Done: paragraph 2:
+- "real time" >>> "real-time"
+
+
+Monika:
+- text after last piece of code: this is confusing, since you have already
+declared "set tick def 1 ." Maybe move some of the explanation to above
+this last declaration and then explain why you choose this particular
+tick method.
+
+
+Done: paragraph 3 (Section 4):
+- "comprising of all": remove "of"
+- could you briefly mention why only considering uni-directional rails
+is not too much of a simplification
+- "We also make the standard assumption that trains have no length" :-)
+Is this really a standard assumption (maybe give reference?). Trains in, e.g.,
+USA and Mauretania can be pretty long, but maybe not so in Europe?
+
+Done: Page 7, last line: this equation already appears on page 6; remove one occurrence,
+probably the one on p6.
+
+Done: Page 8 and elsewhere: Subsubsection headers like "Controller" and "Interlocking" should end with a
+period (".") in LNCS.
+
+Done: Page 11:
+Nothing needed (Yes is the answer)- Is it really called "finitisation"?
+- "counter example" is one word: "counterexample"
+
+Done: Page 15:
+- the author names should NOT be in boldface font
+
+References:
+- The canonical reference to Maude is the book "All About Maude".
+Please use that instead of 4.
+
+Done: Ref 10 and 13: capitalize "Real-Time Maude"
+
+- Refs 11 and 15: these appeared at the same event. Why is their
+publication info (years etc) so different?
+
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 21
+TITLE: Towards safety analysis of ERTMS/ETCS Level 2 in Real-Time   Maude
+AUTHORS: Phillip James, Andrew Lawrence, Markus Roggenbach and Monika Seisenberger
+
+OVERALL EVALUATION: 0 (borderline paper)
+
+----------- REVIEW -----------
+This paper describes an application of the Real-Time Maude based model
+checking approach to the application of railway systems. In
+particular, it allows modeling and checking safety conditions about
+train stations with multiple tracks and multiple trains on those. This
+is an abstraction of the railway standard called ERTMS/ETCS.
+
+The paper does not provide any novel approach or improvement on the
+basic technique of Real-Time Maude, but rather is a case study on the
+usability of the approach. With this in mind, it does a good job
+motivating why this is important and does provide a nice description
+of the selected railway stations.
+
+It would of course be nice to have a
+larger amount of station types and multiple trains.
+DONE *** MR ***
+
+The combination of simulation and error injection provides good
+understanding of what can happen, and what can go wrong if any input
+is not properly validated. 
+
+Conceptually I am a bit worried about trains of 0 length, which I do
+not believe is a standard assumption. If I am wrong, please do provide
+a reference in your paper where you make that statement. Combining
+that with only 50m distance between trains is a danger.
+DONE *** MR ***
+
+--- Abstraction is: Trains shorter than any track length in the scheme plan. Refer to SCP.
+
+The related work section only states what other approaches do, but
+does not actually compare them to this work. Please address this. 
+DONE *** MR ***
+
+Detailed comments to the authors *** Monika ***
+
+Ensure that you use 'braking' and 'breaking' correctly throughout. 
+
+poses a number research -> poses a number of research
+
+train's breaking point -> train's braking point
+
+conditions a a route -> conditions a route
+
+made us to favour Maude -> made us choose Maude (?)
+
+verification real-time systems -> verification of real-time systems
+
+overview of our model first we discuss -> overview of our model. First we discuss
+
+implementation level a subsystem -> implementation level of a subsystem
+
+
+Make your references consistent, for example, 'real-time maude' should be capitalized.
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 21
+TITLE: Towards safety analysis of ERTMS/ETCS Level 2 in Real-Time   Maude
+AUTHORS: Phillip James, Andrew Lawrence, Markus Roggenbach and Monika Seisenberger
+
+OVERALL EVALUATION: 2 (accept)
+
+----------- REVIEW -----------
+
+The paper describes the modeling and verification of an ERTMS system
+using Real-Time Maude.  The model integrates all the ERTMS subsystems:
+Controller, Interlocking, RBC, Trains and Track equipment.  The model
+is hybrid and allows to model notions of time and distance. These
+notions are central in an ERTMS system as the system grants
+authorizations to move to the trains in terms of speed and distances
+(EoA). The train objects (Maude is OO) permanently calculates its
+position and speed based on the elapsed time. The freedom of collision
+property is then expressed in term of distance: there is at any time a
+distance of minimum 100m between any two trains.  The paper describes
+the principles and architecture of ERTMS, introduces Real-Time Maude,
+describes the model of ERTMS in Maude, and gives simulation and
+verification results for models of three different track plans,
+including examples of configuration mistakes for all the ERTMS
+subsystems.
+
+Pros:
+
+- The work is very valuable and original. This is probably the first
+  time that the physical movements of the train is modelled in the
+  framework of ERTMS data application verification.
+
+- Well-written, well-organized and easy to read.
+
+- Good use of the 15 pages in order to trace their reasoning from the
+  ERTMS subsystems to error detection.
+
+- Accurate and detailed description of the ERTMS subsystems and their
+  application data.
+
+- Complete explanation of the Maude code modelling the main elements
+  (objects) of the ERTMS subsystems.
+
+- Validation section giving confidence in the whole model involving:
+  the train, the Interlocking and the RBC.
+
+- Error injection showing that errors can be found and displayed by
+  mean of counter examples.
+
+Cons:
+
+Done: The paper contains a lot of Maude code without enough explanation.
+  A lot of knowledge of Maude is assumed, and furthermore
+  type/sort/operation identifiers are introduced without
+  explanation. See details below. *** Phil re-read and cross reference with below ***
+
+- The model makes the "standard assumption" that the trains have no
+  length. Zero-length assumption seems quite strong, considering that
+  the verified property is then a safety distance of 50m between
+  trains.  A common assumption is rather that trains have "rubber
+  length". 
+
+DONE *** MR (as above) ***
+
+Done (already present in future work): Performance of the verification in terms of time looks promising for
+  the future verification of larger stations, but the stations
+  modelled for the case study are all unidirectional. Modelling
+  bidirectional stations will increase the complexity of both the
+  Interlocking and RBC objects. *** Phil Add this to Future work ***
+
+Done (intro to section 4): The article doesn’t say how the Maude model was built from the
+  scheme plan tables: was it written manually or automatically
+  generated by mean of a dedicated tool? *** Phil ***
+
+Details:
+
+- p.6 what are the sorts 'System' and 'GlobalSystem'? How do they
+  differ form 'Configuration'? DONE What is 'TimeInf'?  DONE *** Monika ***
+- p.6 "the first one comprising ** all ERTMS subsystems" DONE *** MR ***
+- p.9 "class RBC | *availableRoutes* : ..."  DONE: typo corrected - or more required? *** Monika ***
+- p.10 what is 'monus'?  DONE *** Monika ***
+- p.10 "the maximal time elapse function is time-robust" what does this mean? TODO *** Monika ***
+- p.11 "we establish ** the following finitisation theorem" DONE *** MR *** 
+- p.12 what does the command 'trew' do? DONE *** Phil ***

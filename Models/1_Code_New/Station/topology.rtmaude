@@ -1,0 +1,163 @@
+(tomod TOPOLOGY is protecting NAT-TIME-DOMAIN . 
+ 
+sort Track .
+ops AA, AB, AC, AD, AE, AF, Exit : -> Track .
+ops BC, BD : -> Track .
+var AN : Track .
+
+sort TRoute .
+sort RouteName .
+ops R1, R2 : -> TRoute .
+var RN : TRoute .
+sort Point .
+ops P1, P2 : -> Point . 
+
+ops  RouteName1A RouteName1B RouteName2 RouteName3 RouteName4 : -> RouteName .
+
+op next : Track TRoute -> Track . 
+op nroutenext : RouteName -> RouteName .                
+op previous : Track TRoute -> Track .
+op isexittrack : Track -> Bool .
+op routeexit : TRoute -> Track .
+op initialttrack :  TRoute -> Track .
+op initialntrack :  RouteName -> Track .
+op initialnroute : TRoute -> RouteName .
+op external-track : -> Track .
+op getNRoute : Track TRoute -> RouteName .
+
+eq initialttrack(R1) = AA .
+eq initialttrack(R2) = AA .
+eq initialntrack(RouteName1A) = AA .
+eq initialntrack(RouteName1B) = AA .
+eq initialntrack(RouteName2) = AC .
+eq initialntrack(RouteName3) = AF .
+eq initialntrack(RouteName4) = Exit .
+eq initialnroute(R1) = RouteName1A .
+eq initialnroute(R2) = RouteName1B .
+
+ceq isexittrack(AN) = true if AN == Exit .
+eq isexittrack(AN) = false [owise] .
+
+op routeexit : TRoute -> Track . 
+eq routeexit(R1) = Exit .
+eq routeexit(R2) = Exit .
+
+eq next(AA,RN) = AB .
+eq next(AB,R1) = AC .
+eq next(AB,R2) = BC .
+eq next(BC,R2) = BD .
+eq next(AC,R1) = AD .
+eq next(AD,R1) = AE .
+eq next(AE,R1) = AF .
+eq next(AE,R2) = AF .
+eq next(BD,R2) = AE .
+eq next(AF,RN) = Exit .
+
+eq previous(AA,RN) = external-track .
+eq previous(AB,RN) = AA .
+eq previous(AC,RN) = AB .
+eq previous(AD,RN) = AC .
+eq previous(BC,RN) = AB .
+eq previous(BD,RN) = BC .
+eq previous(AE,R1) = AD .
+eq previous(AE,R2) = BD .
+eq previous(AF,RN) = AE .  
+eq previous(Exit,RN) = AF . 
+
+
+op endof : Track -> Nat .
+eq endof(AA) = 1499 .
+eq endof(AB) = 1749 .
+eq endof(AC) = 3249 .
+eq endof(BC) = 3249 .
+eq endof(AD) = 4749 .
+eq endof(BD) = 4749 .
+eq endof(AE) = 4999 .
+eq endof(AF) = 6499 .
+eq endof(Exit) = 7999 .
+
+op endofroutename : RouteName -> Nat .
+
+eq endofroutename(RouteName1A) = 3249 .
+eq endofroutename(RouteName1B) = 3249 .
+eq endofroutename(RouteName2) = 6499 .
+eq endofroutename(RouteName3) = 6499 .
+eq endofroutename(RouteName4) = 7999 .
+ 
+var N : Nat .
+
+op gettrack : Nat TRoute -> Track .
+ceq gettrack(N,RN) = AA if 0 <= N and N < 1500 .
+ceq gettrack(N,RN) = AB if 1500 <= N and N < 1750 .
+ceq gettrack(N,R1) = AC if 1750 <= N and N < 3250 .
+ceq gettrack(N,R2) = BC if 1750 <= N and N < 3250 .
+ceq gettrack(N,R1) = AD if 3250 <= N and N < 4750 .
+ceq gettrack(N,R2) = BD if 3250 <= N and N < 4750 .
+ceq gettrack(N,RN) = AE if 4750 <= N and N < 5000 .
+ceq gettrack(N,RN) = AF if 5000 <= N and N < 6500 .
+ceq gettrack(N,RN) = Exit if 6500 <= N and N < 8000 .
+
+op isPoint : Track -> Bool .
+eq isPoint(AA) = false .  
+eq isPoint(AB) = true .  
+eq isPoint(AC) = false .  
+eq isPoint(AD) = false .
+eq isPoint(AE) = false .
+eq isPoint(AF) = false .
+eq isPoint(BC) = false .
+eq isPoint(BD) = false .
+eq isPoint(Exit) = false .
+
+eq getNRoute(AA,R1) = RouteName1A .
+eq getNRoute(AA,R2) = RouteName1B .
+eq getNRoute(AB,R1) = RouteName1A .
+eq getNRoute(AB,R2) = RouteName1B .
+eq getNRoute(AC,R1) = RouteName1A .
+eq getNRoute(BC,R2) = RouteName1B .
+eq getNRoute(AD,R1) = RouteName3 .
+eq getNRoute(BD,R2) = RouteName2 .
+eq getNRoute(AE,R1) = RouteName3 .
+eq getNRoute(AE,R2) = RouteName2 .
+eq getNRoute(AF,R1) = RouteName3 .
+eq getNRoute(AF,R2) = RouteName2 .
+eq getNRoute(Exit,RN) = RouteName4 .
+
+op getTRoute : RouteName -> TRoute .
+eq getTRoute(RouteName1A) = R1 .
+eq getTRoute(RouteName1B) = R2 .
+eq getTRoute(RouteName2) = R2 .
+eq getTRoute(RouteName3) = R1 .
+eq getTRoute(RouteName4) = R1 .
+
+ops tlength tseglength : -> Nat .       
+eq tlength = 7999 .
+
+op troutelength : TRoute -> Nat .
+eq troutelength(R1) = 6499 .
+eq troutelength(R2) = 6499 . 
+
+var DT : Nat .
+
+op tsegtransition : Track Nat -> Bool .
+eq tsegtransition(AN,DT) = endof(AN) < DT  .
+
+endtom)
+
+
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view TRoute from TRIV to TOPOLOGY is
+    sort Elt to TRoute .
+endv)
+
+(view RouteName from TRIV to TOPOLOGY is
+    sort Elt to RouteName .
+endv)
+
+(rew next(AB,R1) .)

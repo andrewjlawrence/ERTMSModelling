@@ -1,0 +1,85 @@
+The \verb|Train| class is the only time dependent entity in our
+model. It is designed as an automaton with four
+states \verb|stop|, \verb|acc| for accelerating, \verb|cons| for
+constant speed, and \verb|brake|. There are transitions \verb|stop|
+$\to $ \verb|acc| $\to $ \verb|cons| $\to $ \verb|brake|,
+and \verb|acc| $\to$ \verb|brake| and vice versa. In addition, it has
+fields representing the current distance (relative to a given
+reference point 0), speed, acceleration, movement authority (relative
+to 0), maximum speed, and the current track segment.
+\begin{lstlisting}
+class Train | state : TrainState, dist : NNegRat,
+              speed : NNegRat, ac : NNegRat, ma : NNegRat,
+              tseg : Track, maxspeed : NNegRat .
+\end{lstlisting}
+We assume that acceleration is linear, and -- apart from Scenario 3 in Section~\ref{sec:errorInjection} -- use a value of 1 for both acceleration and deceleration. Trains move according to Newton's laws, i.e., if at time $0$ a train is at \verb|DT| with speed \verb|S| and acceleration \verb|A|, then the speed at time \verb|R| is \verb|S + A * R| and the location is \verb|DT + S * R + A * R * R / 2|. Its braking distance \verb|bd(S,A)| is \verb|S * S / 2 * A|. In the following we show the rule for a train in the accelerating state.
+
+\begin{lstlisting}
+crl [acc] :
+ < O1 : Inter | pointPositions : PointSettings >
+ delta(< O : Train | state : acc, dist : DT, speed : S,
+         ac : A, ma : MA, tseg : AN, maxspeed : MAX >, R)
+      =>
+      < O1 : Inter | pointPositions : PointSettings >
+      trackseg(PointSettings, < O : Train |  
+      state : if (S + A * R == MAX)     
+              then cons
+	      else (if R == mteMA(DT,S,A,MA)
+	            then brake
+	            else acc fi) fi, 
+      dist : DT + S * R + R * R * A * (1/2),
+      speed : S + A * R > ) if not AN == Exit .
+\end{lstlisting}
+The rule takes as argument a train object and a time \texttt{R} and computes its new configuration after time \texttt{R}. It is sufficient to list those attributes that are updated, here \texttt{speed}, location, and, possibly, its state.
+The operator \verb|trackseg|  takes the new
+location of the train and the \verb|PointSettings| from the
+interlocking and returns a new train object.
+In the case that the train has entered a new track it will
+update the train object accordingly.
+
+The time \verb|R| is determined by the maximal time elapse which is,
+in the acceleration state, the minimum of the following three
+cases. 1) maximum speed is reached, 2) the end of a track segment is
+reached, 3) the distance to the movement authority is not greater than
+the required braking distance.
+\begin{lstlisting}
+ceq mte (< O : Train | state : acc,  dist : DT, speed : S, 
+           ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+           = min((MAX monus S) / A,
+                ((endof(AN) + 1) monus DT) / S,
+                mteMA(DT,S,A,MA))  if S > 0 .
+eq mteMA(DT, S, A, MA) = (((MA monus 1) monus DT) monus 
+                         (S * S / (2 * A))) / ( 2 * S) .
+\end{lstlisting}
+In case 1) we used \texttt{monos} for the maximum of the difference between two numbers and \texttt{0}. 
+For cases 2) and 3) the calculation of \texttt{mte} involves quadratic
+equations.  From \texttt{DT + S * R + A * R * R / 2 < endof(AN) + 1} we
+could determine \texttt{R} using an approximation via Newton's
+method. However, since \texttt{0 < A * R * R / 2 <= A * R / 2 < 1}, our
+assumption \texttt{A = 1} and as \texttt{0 < R <= 1} holds thanks to the default
+tick, we approximate the quadratic term either from below or from
+above depending on the context: in the case of entering a new track we
+ignore the quadratic term as we want to be on the new track
+already; in the case of calculating where to start braking, we bring
+the event slightly forward, i.e., instead of braking exactly, we start
+slightly too early. Both approximations are justified by the
+default tick. Finally, to keep the size of rational numbers under
+control, we determine the sampling time point with a precision of
+\texttt{1/1000}.
+
+
+%Also note that each train system will build in error
+%margins in case of braking, which are larger than the ones used here,
+%and never brake exactly to the point (Cf also section on validation).
+%Uli's formulation:
+%An important question is whether our modelling is complete, that is, whether
+%it is able to detect any possible error (???). The criteria for completeness
+%given in [2] appear to be satisfied by our modelling except for the conditions
+%... which are only approximately satisfied due to rounding in connection with
+%the square root function. We conjecture that an appropriate weakening of
+%the conditions ... still suffices to imply completeness, but leave this 
+%to further work. The property of being non-zeno, required in [2], can be 
+%seen for our system as follows. ...
+
+
+

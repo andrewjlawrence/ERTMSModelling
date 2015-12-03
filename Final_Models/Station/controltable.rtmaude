@@ -1,0 +1,69 @@
+******************************
+**** Station Control Table ***
+******************************
+
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view RouteName from TRIV to TOPOLOGY is
+      sort Elt to RouteName .
+endv)
+
+(view PointPos from TRIV to TOPOLOGY is
+      sort Elt to PointPos .
+endv)
+
+(tomod CONTROLTABLE is protecting POSRAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                                    sort Elt{RouteName} to EltRouteName) .
+      
+
+       op clearTracks : RouteName -> SetOfTracks .
+       op normalPts : RouteName -> SetOfPoints .
+       op reversePts : RouteName -> SetOfPoints .
+       op isReleaseTrack : Track -> Bool .
+       op release : Track -> Point .
+       op conflictingRoutes : RouteName -> RouteName .
+
+       var AN : Track .
+
+       eq clearTracks(RouteName1A) = (AA, AB, AC) . 
+       eq clearTracks(RouteName1B) = (AA, AB, BC) . 
+       eq clearTracks(RouteName2) = (BD, AE, AF) .
+       eq clearTracks(RouteName3) = (AD, AE, AF) .
+       eq clearTracks(RouteName4) = empty .     
+ 
+       eq normalPts(RouteName1A) = (P1) .
+       eq normalPts(RouteName1B) = empty .
+       eq normalPts(RouteName2) = empty .
+       eq normalPts(RouteName3) = (P2) .
+       eq normalPts(RouteName4) = empty .
+
+       eq reversePts(RouteName1A) = empty .     
+       eq reversePts(RouteName1B) = (P1) .
+       eq reversePts(RouteName2) = (P2) .
+       eq reversePts(RouteName3) = empty .
+       eq reversePts(RouteName4) = empty .
+
+       eq isReleaseTrack(AN) = (AN == AC or AN == BC or AN == AF) .
+
+       eq release(AC) = P1 .
+       eq release(BC) = P1 .
+       eq release(AF) = P2 .
+
+       eq conflictingRoutes(RouteName1A) = (RouteName1B) .
+       eq conflictingRoutes(RouteName1B) = (RouteName1A) .
+       eq conflictingRoutes(RouteName2) = (RouteName3) .
+       eq conflictingRoutes(RouteName3) = (RouteName2) .
+       eq conflictingRoutes(RouteName4) = empty .
+ endtom)

@@ -1,0 +1,189 @@
+\section{Model Checking Results}
+\label{sec:modelchecking}
+
+In this section we verify a number of rail yards with the Real-Time
+Maude Tool~\cite{olveczky2008real}. We check that that the invariant
+``no collisions'', c.f.\ Section \ref{sec:safetycondmodelling}, is
+globally true, either for all time 
+\begin{lstlisting}[columns=fixed]
+mc initState |=t [] nocrashDistance(train1,train2) . 
+\end{lstlisting}
+or for 300 time steps:
+\begin{lstlisting}[columns=fixed]
+mc initState |=t [] nocrashDistance(train1,train2) in time <= 300 . 
+\end{lstlisting}
+
+Here, \verb|initState| is as given in Section
+\ref{sec:errorInjection}. As track plans, we consider the pass-through
+station shown in Figure \ref{fig:station} as well as some variations
+of it, see Figure \ref{fig:threestation}. This is in order to obtain
+an indication of how variations in the complexity of the rail yard
+influence the time required for model checking.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.5,transform shape]
+\fontfamily{Heletvica Narrow}{\fontsize{11}{11}\selectfont
+\draw [->] (0,-0.8) to (1,-0.8);
+
+\RWConnector{a0}{(0,-2)}
+\RWConnector{a1}{(2,-2)}
+\RWLinearUnitBelow{a0}{a1}{Entry}
+\RWSignal{MB1}{(2,-2)}{MB1}
+\RWConnector{a2}{(4,-2)}
+\RWLinearUnitBelow{a1}{a2}{AA(500m)}
+\RWConnector{a3}{(6,-2)}
+\RWLinearUnitBelow{a2}{a3}{AB(500m)}
+
+\RWPoint{p101}{a4}{a5}{p101}{(7,-2)}
+\RWLabelPointAboveLeft{a5}{a5}{P1}
+\RWLabelLinearUnitBelow{a4}{a5}{AC(150m)}
+
+\RWConnector{b6}{(10,-0.5)}
+\RWLinearUnitBelow{p101}{b6}{BD(500m)}
+\RWConnector{b7}{(12,-0.5)}
+\RWLinearUnitBelow{b6}{b7}{BE(500m)}
+
+\RWConnector{a6}{(10,-2)}
+\RWLinearUnitBelow{a5}{a6}{AD(500m)}
+\RWConnector{a7}{(12,-2)}
+\RWLinearUnitBelow{a6}{a7}{AE(500m)}
+
+\RWConnector{a8}{(14,-2)}
+\RWLinearUnitBelow{a7}{a8}{Exit1}
+\RWConnector{b8}{(14,-0.5)}
+\RWLinearUnitBelow{b7}{b8}{Exit2}
+}
+
+
+\end{tikzpicture}
+\quad \\
+\begin{tikzpicture}[scale=0.5,transform shape]
+\fontfamily{Heletvica Narrow}{\fontsize{11}{11}\selectfont
+\draw [->] (0,-0.8) to (1,-0.8);
+
+\RWConnector{a0}{(0,-2)}
+\RWConnector{a1}{(2,-2)}
+\RWLinearUnitBelow{a0}{a1}{Entry}
+\RWSignal{MB1}{(2,-2)}{MB1}
+\RWConnector{a2}{(4,-2)}
+\RWLinearUnitBelow{a1}{a2}{AA(1500m)}
+\RWPoint{p101}{a3}{a4}{p101}{(5,-2)}
+\RWLabelPointAboveLeft{a4}{a4}{P1}
+\RWLabelLinearUnitBelow{a3}{a4}{AB(250m)}
+
+\RWConnector{b5}{(8,-0.5)}
+\RWLinearUnitBelow{p101}{b5}{BC(1500m)}
+
+\RWPoint{p102}{b6}{b7}{p102}{(9,-0.5)}
+\RWLabelPointAboveLeft{b7}{b7}{P2}
+\RWLabelLinearUnitBelow{b6}{b7}{BD(250m)}
+
+\RWConnector{b8}{(12,-0.5)}
+\RWLinearUnitBelow{b7}{b8}{BE(1500m)}
+%\RWSignal{MB2}{(9,-0.5)}{MB2}
+
+\RWConnector{a5}{(8,-2)}
+\RWLinearUnitBelow{a4}{a5}{AC(1500m)}
+%\RWSignal{MB3}{(9,-2)}{MB3}
+\RWConnector{a6}{(10,-2)}
+\RWLinearUnitBelow{a5}{a6}{AD(1500m)}
+
+
+\RWConnector{c7}{(12,1)}
+\RWLinearUnitBelow{p102}{c7}{CE(1500m)}
+\RWConnector{c8}{(14,1)}
+\RWLinearUnitBelow{c7}{c8}{CF(1500m)}
+\RWSignal{MB2}{(14,1)}{MB4}
+\RWConnector{c9}{(16,1)}
+\RWLinearUnitBelow{c8}{c9}{CG(1500m)}
+
+\RWConnector{b9}{(14,-0.5)}
+\RWLinearUnitBelow{b8}{b9}{BF(1500m)}
+\RWConnector{b10}{(16,-0.5)}
+\RWLinearUnitBelow{b9}{b10}{BG(1500m)}
+\RWSignal{MB3}{(14,-0.5)}{MB5}
+
+\RWConnector{a7}{(12,-2)}
+\RWLinearUnitBelow{a6}{a7}{AE(1500m)}
+\RWConnector{a8}{(14,-2)}
+\RWLinearUnitBelow{a7}{a8}{AF(1500m)}
+\RWConnector{a9}{(16,-2)}
+\RWLinearUnitBelow{a8}{a9}{AG(1500m)}
+\RWSignal{MB4}{(14,-2)}{MB6}
+\RWConnector{a10}{(18,-2)}
+\RWLinearUnitBelow{a9}{a10}{AH(1500m)}
+\RWConnector{a11}{(20,-2)}
+\RWLinearUnitBelow{a10}{a11}{AI(1500m)}
+
+\RWPointReverse{p103}{b11}{b12}{p103}{(17,-0.5)}
+\RWLabelPointAboveRight{b12}{b12}{P3}
+\RWLabelLinearUnitBelow{b11}{b12}{BH(250m)}
+
+\RWConnector{b13}{(20,-0.5)}
+\RWLinearUnitBelow{b11}{b13}{BI(1500m)}
+
+\RWPointReverse{p104}{a12}{a13}{p104}{(21,-2)}
+\RWLabelPointAboveRight{a13}{a13}{P4}
+\RWLabelLinearUnitBelow{a12}{a13}{AJ(250m)}
+
+\RWConnector{a14}{(24,-2)}
+\RWLinearUnitBelow{a12}{a14}{Exit}
+}
+\end{tikzpicture}
+\caption{Track plans for a junction and three platform station.}
+\label{fig:junction}
+\label{fig:threestation}
+\end{figure}
+
+We check all three track plans with manually constructed tables that
+we consider to be correct. In all settings the model checking confirms
+that these rail yard designs are collision free (within the given
+time-bound, if applicable).  The table shows verification
+times\footnote{Using a PC running Xubuntu
+  14.04.2 with an i7 4790 @3.60Ghz and 32GB RAM.} and the number of
+rewrite steps for the three rail yards against the random controller
+and the round-robin controller (see Section~\ref{ssec:instan}).  The
+following table presents our model checking results.
+%
+%% Here, we follow the finitisation technique given by James et
+%% al.~\cite{sttt14}, namely that proving collision-freedom for two
+%% trains is enough for proving safety in general. However, this result
+%% requires a proof on based around the encoding of our railway DSL in
+%% real-time maude.  Even though our encoding follows James at al's, this
+%% proof remains as future work.
+%
+
+\vspace{-0.3cm}
+\begin{table}
+\centering
+\caption{Verification results of model checking three scheme plans.}
+{\small
+  \begin{tabular}{|l|c|c|}
+    \hline 
+    \textbf{Scheme Plan} & \textbf{Round Robin Controller} &
+    \textbf{Random Controller} \\
+    & \textbf{Unbounded} & \textbf{in Time 300} \\
+    \hline \hline
+    Junction  & 0.5s / 1,465,601 rewrites & \hphantom{1}361.1s /   \hphantom{1}\hphantom{1}151,564,627 rewrites \\
+    Pass-through Station & 0.7s  / 1,886,303  rewrites & \hphantom{1}589.0s /  \hphantom{1}\hphantom{1}500,397,040 rewrites \\
+    Three Platform Station & 1.2s / 2,622,022  rewrites & 1957.9s / 1,009,144,410  rewrites \\
+    \hline
+ \end{tabular}
+}
+\end{table}
+\vspace{-0.3cm}
+
+%% \label{tab:results}
+%% \end{figure}
+%
+
+The table shows that unbounded model checking is successful when
+control is restricted, e.g., to our round-robin controller. This is due to the restrictions that such a control strategy puts on train movements through the sheme plan. However,
+when using our random controller, the state space vastly
+increases. Thus, we provide results for up to a given time bound of
+$300s$. Note that this time is enough to ensure that two trains can
+travel completely through the Junction and Station scheme
+plan. As expected, model checking times increase with the complexity of the scheme plans. 
+It is future work, to consider further, more varied rail
+yards.

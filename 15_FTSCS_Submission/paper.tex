@@ -1,0 +1,123 @@
+
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[runningheads,a4paper]{llncs}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+%\usepackage{comment}
+\usepackage{tikz}
+\usepackage{float}
+%%\usepackage{subfig}
+\usepackage{url}
+\usepackage{todonotes}
+\usepackage{float}
+\usepackage{courier}
+
+%\usepackage{subfloat}
+\usepgflibrary{arrows}
+\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,fit}
+\usetikzlibrary{shapes.geometric}
+\usepgflibrary{shapes.geometric}
+\usetikzlibrary{shapes.symbols}
+\usepgflibrary{shapes.callouts}
+\usetikzlibrary{shapes.callouts}
+
+
+\usetikzlibrary{through} 
+\include{railway_tikz_macros}
+ 
+\lstset{basicstyle=\fontsize{8}{8}\ttfamily, xleftmargin=2em, framexleftmargin=1.5em, framexrightmargin=-0.6em, frame=single}
+
+\begin{document}
+\mainmatter 
+
+\title{Towards Safety Analysis of ERTMS/ETCS \\ Level 2 in Real-Time
+  Maude}
+
+\titlerunning{ERTMS/ETCS Level 2 in Real-Time Maude}
+
+\author{Phillip James\inst{1} \and Andrew Lawrence \inst{2} \and \\ 
+Markus Roggenbach\inst{1} \and  Monika Seisenberger\inst{1}}
+%
+\institute{Swansea University, UK
+\and
+Hitachi Data Systems, Poole, UK.
+}
+
+\authorrunning{James, Lawrence, Roggenbach, Seisenberger}
+
+\maketitle
+
+\begin{abstract}
+ERTMS/ETCS is a European signalling, control and train protection
+system. In this paper, we model and analyse this complex system of
+systems, including its hybrid elements, on the design level in
+Real-Time Maude. Our modelling allows us to formulate safety
+properties in physical rather than in logical terms. %% For instance ``no
+%% collision between trains'' is expressed as the physical invariant: the
+%% distance (in meters) between trains never falls below a minimum
+%% threshold.
+We systematically validate our model by simulation and error
+injection. Using the Real-Time Maude model-checker, we effectively
+verify a number of small rail systems.
+\end{abstract}
+
+\input{introduction.tex}
+%% Markus
+
+\input{ertms.tex}
+%% Phil
+
+\input{maude.tex}
+%%% Andy -- Include time/mte/delta
+%%% Uli has subsection on completeness.
+
+\input{modelling.tex}
+%%% Monika -- Comment on Generic.
+
+
+\input{validation.tex}
+%%% Monika -- Simulation
+%%% Phil -- Error Injection
+%%% Uli -- Completeness
+
+\input{modelchecking.tex}
+%%% Phil
+
+\input{relatedwork.tex}
+%%% Todo: Markus
+
+\input{summary.tex}
+%%% Todo: Markus
+
+\paragraph{Acknowledgement} 
+The authors would like to thank Simon Chadwick, Siemens Rail
+Automation, UK, for his continued support and many helpful
+discussions. We also appreciate the helpful advice from  Peter \"Olveczky
+%towards our modelling 
+on Real-Time Maude and the constructive comments given by three anonymous referees. Finally, we thank Erwin R.\ Catesbeiana (Jr) for timely hints on how to
+stay on track.
+
+\bibliographystyle{abbrv}
+\bibliography{doc}
+
+\end{document}
+

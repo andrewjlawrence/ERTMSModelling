@@ -1,0 +1,92 @@
+\section{Related Work}
+%%% Todo: Markus
+ERTMS is a complex systems of systems, made up of distributed
+components interconnected through standard (e.g.\ Euroradio) and
+proprietary (e.g.\ Siemens-specific) protocols and algorithms. Our
+approach reflects this by covering the full control cycle between
+controller, interlocking, radio-block centre and trains. Our objective
+is to verify the location specific data of railway designs in their
+early development stages, accompanying a standard design process
+performed by signalling companies such as our industrial partner
+Siemens.
+
+%% This is in
+%% contrast to a number of other works, which focus on parts of ERTMS
+%% only. 
+
+%% Another
+%% dimension is the question if the verification takes place on design or
+%% implementation level.
+
+Our approach to cover all components is different from several
+verification approaches with a focus on a single component only.
+%
+Vu et al.~\cite{vu15} provide a generic and re-configurable model
+of ERTMS Level 2 on the design level with the same objective that we
+have. They present their model as a Kripke structure and verify
+high-level safety properties such as head-to-head collision or
+derailment on a point. %% They introduce a concept of virtual signals and
+%% argue that this allows them to handle the assignment of movement
+%% authorities in a way similar to the situation where conventional
+%% signals are used. Their verification technology is SMT solving as
+%% implemented in the RT-Tester tool-box. It is able to handle large
+%% Danish rail stations.
+Their approach
+%
+%% This reduction
+abstracts from trains and the RBC and presumes these components to be
+correctly implemented. Thus, their verification focuses on the
+interlocking component.
+%
+%% %
+%% On the modelling side, differences appear to be mostly due to national
+%% pecularities. They model the Danish interlocking system, which is
+%% based upon ``interlocking tables'' similar to our control
+%% tables. Furthermore, they apply the technique of sequential
+%% release. As we deal with uni-directional railways only, in our setting
+%% release tables for points are sufficient.
+%
+Cimatti et al.~\cite{cimatti12} apply software model checking to
+verify the implementation level a subsystem responsible for the
+allocation of logical routes to trains. The software under
+consideration has been developed by Ansaldo-STS and is part of this
+company's implementation of ERTMS Level 2. %% An example of a property
+%% under consideration is ``no two different trains occupy the same
+%% track''.  Cimatti et al.\ represent the software in the VELOS
+%% specification language (resembling the C++ language), the properties
+%% of interest in temporal logic, and discuss in detail the performance
+%% of different model checkers. Thus,
+They focus on software verification of a sub-component rather than on
+location specific data for the whole system.
+%
+Nardone et al.~\cite{nardone14} develop a new, rail specific
+specification language DSTM4Rail, an extension of hierarchical state
+machines. They employ DSTM4Rail to the modelling of specific
+functionalities of the ERTMS Radio Block Centre. Overall the objective
+is to obtain a formal model of ERTMS requirements for system testing
+purposes. %% The long term goal is integration into a model-driven
+%% development processes.
+This work is specialised to quality assurance for one ERTMS component.
+
+The openETCS initiative~\cite{openETCS} sets out to provide
+specifications that can be used for software generation for ETCS train
+control components, track elements, and functionality to be integrated
+in track side interlocking systems. This software development follows
+a model-driven approach, where the methods and tools shall comply with
+a SIL 4 development process. 
+
+Chiappini et al.~\cite{chiappini10} work towards the
+formalisation and validation of the overall ERTMS/ETCS
+specifications. To this end, they formalise a reference subset
+(including Movement Authority Management and RBC/RBC Handover) of the
+system requirements through a set of concepts and diagrams in UML, and
+through additional constraints in a defined controlled natural
+language. This formalisation then undergoes an automatic validation
+check covering questions concerning consistency, scenario
+compatibility, and if certain properties hold. Their work puts the
+ERTMS/ETCS specifications themselves under scrutiny. Their methods are
+semi-formal.
+
+
+
+

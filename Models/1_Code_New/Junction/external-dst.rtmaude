@@ -1,0 +1,46 @@
+*** a module for an external discrete single train. 
+*** These external trains capture the behaviour of trains that have yet to enter the section of railway controlled by the system.
+
+(tomod EXTERNAL-DISCRETE-TRAINS is protecting NAT-TIME-DOMAIN .
+       protecting MSGS .
+       protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                              sort Entry{Oid,Nat} to EntryON) .
+       protecting SET{Oid}  * (sort Set{Oid} to SetO,
+                              sort Elt{Oid} to EltO) .
+       protecting DISCRETE-SINGLE-TRAIN .
+
+  *** The external discrete trains class.
+  *** maxspeed the max speed of the train
+  *** route The route that the train is travelling along. 
+  class ExternalTrains |  maxspeed : MapON, trains : SetO, nexttrain : Oid  .
+
+  sort MyConfig .
+  subsort ObjectConfiguration < MyConfig .
+  subsort EmptyConfiguration < MyConfig .  
+  var MyREST : MyConfig .
+
+  vars P : NzNat . 
+  vars MA,MAX,N : Nat .
+  vars O,O2 : Oid .
+  var R : TRoute .
+  var OCREST : ObjectConfiguration .
+  var REST : Configuration . 
+  var MAP1 : MapON .
+  var SET1 : SetO .
+
+  op notrain : -> Oid .
+  op selecttrain : SetO -> Oid .
+  eq selecttrain(empty) = notrain .
+  eq selecttrain((O, SET1)) = O .
+
+  eq mte(< O : ExternalTrains | >) = 1 . 
+    
+ crl [delta1] : delta(< O : ExternalTrains | nexttrain : O2 > ) => < O : ExternalTrains | > marequest(O2,0) if not O2 == notrain . 
+  rl [delta2] : delta(< O : ExternalTrains | nexttrain : notrain > ) => < O : ExternalTrains | > .
+  rl [incspeed] : magrant(O2,MA) enterroute(O2,R) < O : ExternalTrains | trains : (O2, SET1) , maxspeed :  MAP1, nexttrain : O2 > => < O : ExternalTrains | trains : SET1 , maxspeed :  MAP1, nexttrain : selecttrain(SET1) > < O2 : Train | state : acc,  dist : 0, speed : 1, ac : 1, ma : MA , maxspeed : MAP1[O2], tseg : initialttrack(R), troute : R, nroute : initialnroute(R) > tsegtrans(initialttrack(R),R) . 
+
+endtom)
+
+*** Tests.
+
+***(trew { magrant(train1,49) enterroute(train1,R1) < train1 : ExternalTrains | maxspeed : (train1 |-> 10) , trains : (train1) , nexttrain : train1 > } in time <= 1 .)

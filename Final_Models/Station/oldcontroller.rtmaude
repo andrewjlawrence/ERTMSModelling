@@ -1,0 +1,55 @@
+
+(tomod CONTROLLER is protecting POSRAT-TIME-DOMAIN-WITH-INF . 
+  protecting MSGS .
+  protecting CONTROLTABLE .
+
+  sort RouteList .
+   
+  op emptyRouteList : -> RouteList .
+  op _:_ : RouteName RouteList -> RouteList .
+ 
+  class Controller | counter : Nat, routes : RouteList .
+
+
+  vars O1, O2 : Oid .
+  var RN : RouteName .
+  var SETRN1 : RouteList .
+  var N : Nat .
+  var R : Time .
+
+  *** Request routes in following order
+  op routeOrder : -> RouteList .
+  eq routeOrder = (RouteName1A : RouteName1B : RouteName2 : RouteName3 : RouteName4 : emptyRouteList) .
+
+*******************usefulf for tests*******************
+***   eq routeOrder = (RouteName4) .
+******************************************
+  eq mte(< O1 : Controller | >) = INF .
+
+  *** counter has reached 0 so reset and request next route
+  eq delta(< O2 : Controller | counter : 0 , routes : (RN : SETRN1) > , R )
+     =
+     routeset(RN) < O2 : Controller | counter : 10 , routes : (SETRN1) > .
+
+  *** Replenish routes
+  eq delta(< O2 : Controller | counter : N , routes : emptyRouteList > , R)
+     =
+     delta(< O2 : Controller | counter : N , routes : routeOrder >, R )  .
+
+  *** Change counter without request
+  ceq delta(< O2 : Controller | counter : N   > , R)
+     =
+     < O2 : Controller | counter : (N monus 1) >
+     if not N == 0 .
+
+  *** The following equations do not work for random choice
+  *** when re-writing, maybe it will for model checking.
+  ***op randomRoute : -> RouteName .
+  ***eq randomRoute = RouteName1A .
+  ***eq randomRoute = RouteName1B .
+  ***eq randomRoute = RouteName2 .
+  ***eq randomRoute = RouteName3 .
+  ***eq randomRoute = RouteName4 .
+  
+endtom)
+

@@ -1,0 +1,268 @@
+(tomod DISCRETE-SINGLE-TRAIN is protecting POSRAT-TIME-DOMAIN-WITH-INF .
+       protecting TOPOLOGY .
+       protecting MSGS .
+       protecting INTERLOCKING .
+
+  *** The are 4 train states
+  *** cons for a train traveling at a constant (maximum speed)
+  *** acc  for an accelerating train
+  *** stop for a stopped train
+  *** brake for a train that is braking.
+  sort TrainState .
+  ops  cons acc stop brake :  -> TrainState [ctor] .
+
+  *** The discrete single train class.
+  *** state the trains state
+  *** dist the position of the train along the track relative to the stating position.
+  *** speed the velocity at which the train is moving alway from the starting position.
+  *** ac the acceleration of the train
+  *** ma the movement authority of the train.
+  *** tseg the current track segment which the train is in.
+  *** maxspeed the max speed of the train
+
+---  op ac : -> NNegRat .
+---  op acbrake : -> NNegRat .
+---  eq ac = 1 .
+---  eq acbrake = 1 . --- ideally one would want here -1; this would require less rules below then.
+
+  class Train | state : TrainState, dist : NNegRat, speed : NNegRat,
+                ac : NNegRat,  ma : NNegRat, tseg : Track , maxspeed : NNegRat .
+
+  *** distance to end of ma
+---  op dma : NNegRat NNegRat -> NNegRat . 
+---  eq dma(DT,MA) = MA monus DT .
+
+  op trackseg :  MapPoint2PointPos Configuration -> Configuration . 
+
+  vars N,N1, N2,M1,M2 : NNegRat .
+  vars DT,MA,A,MAX,MAX1 : NNegRat .
+  var S : NNegRat .
+  vars O,O1,O2 : Oid .
+  var AN : Track .
+  var OCREST : ObjectConfiguration .
+  var REST : Configuration . 
+  var M : Msg .
+  var PointSettings : MapPoint2PointPos .
+  var R : Time .
+
+
+  *** braking distance
+  op bd : NNegRat NNegRat -> NNegRat .
+  eq bd(S,A) = (S * S) / (2 * A) . ---A not 0.
+
+
+--- the following equations would in principle als work for neg A., but then not NNegRat.
+--- op newDT : NNegRat NNegRat NNegRat Time -> NNegRat .
+--- op newDTbra : NNegRat NNegRat NNegRat Time -> NNegRat .
+--- eq newDT(DT,S,A,R) = DT + S * R + R * R * A * (1/2) .
+--- eq newDTbra(DT,S,A,R) = (DT + S * R) monus  (R * R * A * (1/2)) .
+
+--- op newS : NNegRat NNegRat Time -> NNegRat .
+--- op newSbra : NNegRat NNegRat Time -> NNegRat .
+--- eq newS(S,A,R) = S + (A * R) .
+--- eq newSbra(S,A,R) = S monus (A * R) .
+
+
+--- trunc
+
+ op mytrunc : PosRat -> PosRat .
+ eq mytrunc(N) =  (((N * 10000) quo 1) / 10000) .
+  
+
+---  mte acc: maximal time elapse
+--- 1) S + A * R < MAX    => MAX
+--- 2) DT + S * R  + R * R * A/2 < endof (AN) + 1,  (endof(AN) is on old seg, R is max 1,
+---    DT +  S * R < endof(AN) + 1 . 
+---    R  < (endof(AN) + 1 - DT) / S
+--- 3) DT +  (S * S) / ( 2  * A)  +   2 (S * R)   +    R * R  * A   < MA .
+
+
+  op  mteMA : NNegRat NNegRat NNegRat NNegRat -> Time .
+  eq mteMA(DT, S, A, MA) = mytrunc((((MA monus 1) monus DT) monus  ((S * S) / (2 * A))) / ( 2 * S)) .
+
+  ceq mte (< O : Train | state : acc,  dist : DT, speed : S, ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+           = min(((MAX monus S) / A),
+                 mytrunc(((endof(AN) + 1) monus DT) / S),
+                 mytrunc(mteMA(DT,S,A,MA)))  if S > 0 .
+
+
+   eq mte (< O : Train | state : acc,  dist : DT, speed : 0, ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+           = min((MAX / A),
+                 mytrunc(((endof(AN) + 1) monus DT)),
+                 mytrunc((MA monus 1) monus DT)) .
+
+
+
+---  mte brake: maximal time elapse
+--- 1) S + A * R = 0    => R = S / A
+--- 2) DT + S * R  - R * R * A/2) < endof (AN) + 1,  A = 1, R is max 1, replace by 1!
+---    DT +  S * R - 1    < endof(AN) + 1 .
+---    R  < (endof(AN) - DT) / S     
+
+
+  eq mte (< O : Train | state : brake,  dist : DT, speed : S, ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+           = min(S / A,
+                 mytrunc(((endof(AN) + 2) monus DT) / S)
+		 ) .                 
+	                 
+
+--- cons : 
+
+  op mteCons : NNegRat NNegRat NNegRat NNegRat -> Time .
+  eq mteCons(DT, S, A, MA) = (((MA monus 1/2) monus DT) monus  ((S * S) / (2 * A))) / ( 2 * S) .
+
+
+eq mte (< O : Train | state : cons,  dist : DT, speed : S, ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+           = min(
+                 mytrunc(((endof(AN) + 1) monus DT) / S),
+                 mytrunc(mteCons(DT,S,A,MA))) .
+
+
+eq mte(< O : Train | state : stop,  dist : DT, speed : S, ac : A, ma : MA , tseg : AN, maxspeed : MAX >)
+        = INF .
+
+
+
+
+
+  *** The following rewrite rules capture the physical behaviour of the train.
+
+  
+  crl [acc] :
+      < O1 : Inter | pointPositions : PointSettings >
+      delta(< O : Train | state : acc,
+                          dist : DT,
+			  speed : S,
+			  ac : A,
+			  ma : MA ,
+			  tseg : AN,
+			  maxspeed : MAX > , R)
+      =>
+      < O1 : Inter | pointPositions : PointSettings >
+      trackseg(PointSettings, < O : Train |  state : if (S + R * A == MAX)     
+                                                     then cons
+						     else (if R == mteMA(DT,S,A,MA)
+						          then brake
+							  else acc fi) fi, 
+                                             dist : DT + S * R + R * R * A * (1/2),
+                                             speed : S + A * R > )
+      if not AN == Exit .
+      
+
+  
+    crl [brake] :
+       < O1 : Inter | pointPositions : PointSettings >
+       delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA, tseg : AN >,R)
+       =>
+       (if (not ((MA monus 1) monus (DT + S * R) > bd (S monus A * R,A))) 
+       then marequest(O,AN) 
+       else none fi)
+       < O1 : Inter | pointPositions : PointSettings > 
+       trackseg(PointSettings, < O : Train | state : if 0 == S monus (A * R)
+                                                     then stop					
+						     else if ((MA monus 1)
+						                monus (DT + S * R) >
+						                bd (S monus A * R,A))  *** change A to 1 for two trains
+                                                          then acc
+							  else brake fi fi,
+                                             dist : (DT + S * R) monus (R * R * A * (1/2)),    
+					     speed : S monus A * R >) 
+      if not AN == Exit .
+
+  
+  crl [cons] :
+      < O1 : Inter | pointPositions : PointSettings >
+      delta(< O : Train | state : cons,
+                          dist : DT,
+			  speed : S,
+			  ac : A,
+			  ma : MA ,
+			  tseg : AN,
+			  maxspeed : MAX > , R)
+      =>
+      < O1 : Inter | pointPositions : PointSettings >
+      trackseg(PointSettings, < O : Train |  state : (if R == mteCons(DT,S,A,MA)
+						          then brake
+							  else cons fi), 
+                                             dist : DT + S * R,
+                                             speed : S > )
+      if not AN == Exit .
+    
+
+
+
+
+    **** Using MA monus 1 to stop stuttering when close enough to MA. 
+    crl [stop] :
+       delta(< O : Train | state : stop, dist : DT, speed : S, ac : A, ma : MA, tseg : AN >,R)
+       =>
+       (if not ((MA monus 1) > DT) then
+       marequest(O,AN)
+       else none fi)
+       < O : Train | state : (if (MA monus 1) > DT
+			     then acc
+			     else stop fi ) ,
+                         dist : DT,
+			 speed : 0 >
+      if not AN == Exit .
+
+
+
+		   
+  rl [leave] :
+      delta(< O : Train | tseg : Exit > , R)
+      =>
+      < O : Train | tseg : Exit > .
+      ***leave(AN)
+      ***if AN == Exit  .
+
+
+
+  *** Operation to compute next track and send message to interlocking
+  ceq trackseg (PointSettings, < O : Train | dist : DT, tseg : AN >) 
+      =
+      < O : Train | dist : DT, tseg : computeNext(AN, PointSettings) > 
+      tsegtransition(AN, computeNext(AN,PointSettings)) 
+      if DT > endof(AN)  . 
+
+   *** Operation to compute next track and send message to interlocking
+   ceq trackseg (PointSettings, < O : Train | dist : DT, tseg : AN >) 
+      =
+      < O : Train | dist : DT, tseg : AN > 
+      if DT <= endof(AN)  . 
+
+
+
+
+  *** Auxilary functions for computing train position.
+  op computeNext : Track MapPoint2PointPos -> Track .
+
+  ceq computeNext(AN, PointSettings) = next(AN, PointSettings[TrackToPoint(AN)])
+      if point(AN)  .
+
+  ceq computeNext(AN, PointSettings) = next(AN, normal)  --- probably "dummy" op would be better as "normal"
+      if (not point(AN)) .  
+
+  *** using normal is a hack as the value does not matter .
+  *** also not sure if conditions are correct .
+  ceq computeNext(AN, PointSettings) = next(AN, normal)
+      if not (TrackToPoint(AN) :: Point) .    
+   
+
+   *** recieving ma from rbc
+
+  eq magrant(O1,N) < O1 : Train | dist : DT, ma : MA > = < O1 : Train | ma : N > .
+
+
+endtom)
+
+(rew not (AB == Exit) .)
+
+
+
+
+
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 0, ac : 1,  ma : 1499, tseg : AA , maxspeed : 120 >  } in time <=  78 .)
+

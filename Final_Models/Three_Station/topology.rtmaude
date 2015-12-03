@@ -1,0 +1,83 @@
+(tomod TOPOLOGY is protecting POSRAT-TIME-DOMAIN . 
+
+	sort TRoute .
+	ops  TRoute1A, TRoute1B, TRoute1C, TRoute2, TRoute3, TRoute4, TRoute5 : -> TRoute .
+
+ 	sort RouteName .
+       	ops  RouteName1A RouteName1B RouteName1C RouteName2 RouteName3 RouteName4 RouteName5 : -> RouteName .
+
+	sort Track .
+	ops AA AB AC AD AE AF AG AH AI AJ BC BD BE BF BG BH BI CE CF CG Entry Exit Nulltrack : -> Track .
+
+	sort Point .
+	ops P1 P2 P3 P4 : -> Point . 
+
+	sort PointPos .
+	ops normal reverse : -> PointPos .
+
+	*** change to set of tracks?
+	op next : Track PointPos -> Track . 
+	var PPos : PointPos .
+        eq next(Entry,PPos) = AA .
+	eq next(AA,PPos) = AB .
+	eq next(AB,normal) = AC .
+	eq next(AB,reverse) = BC .
+	eq next(AC,PPos) = AD .
+	eq next(AD,PPos) = AE .
+	eq next(AE,PPos) = AF .
+	eq next(AF,PPos) = AG .
+	eq next(AG,PPos) = AH .
+	eq next(AH,PPos) = AI .
+	eq next(AI,PPos) = AJ .
+	eq next(AJ,normal) = Exit .
+	eq next(AJ,reverse) = Exit .
+	eq next(BC,PPos) = BD .
+	eq next(BD,normal) = BE .
+	eq next(BD,reverse) = CE .
+	eq next(BE,PPos) = BF .
+	eq next(BF,PPos) = BG .
+	eq next(BG,PPos) = BH .
+	eq next(BH,normal) = BI .
+	eq next(BH,reverse) = BI . 
+	eq next(BI,PPos) = AJ . 
+	eq next(CE,PPos) = CF .
+	eq next(CF,PPos) = CG .
+	eq next(CG,PPos) = BH .
+
+	op TrackToPoint : Track -> Point .
+	eq TrackToPoint(AB) = P1 .
+	eq TrackToPoint(BD) = P2 .
+	eq TrackToPoint(BH) = P3 .
+	eq TrackToPoint(AJ) = P4 .
+ 
+        op point : Track -> Bool .
+	var AN : Track .
+        eq point(AN) = ((AN == AB) or (AN == AJ) or (AN == BD) or (AN == BH)) .
+
+	op endof : Track -> NNegRat .
+	eq endof(Entry) = 1 .
+	eq endof(AA) = 1499 .
+	eq endof(AB) = 1749 .
+	eq endof(AC) = 3249 .
+	eq endof(BC) = 3249 .
+	eq endof(AD) = 4749 .
+	eq endof(BD) = 4749 .
+	eq endof(AE) = 6249 .
+	eq endof(BE) = 6249 .
+	eq endof(CE) = 6249 .
+	eq endof(AF) = 7749 .
+	eq endof(BF) = 7749 .
+	eq endof(CF) = 7749 .
+	eq endof(AG) = 9249 .
+	eq endof(BG) = 9249 .
+	eq endof(CG) = 9249 .
+	eq endof(AH) = 9499 .
+	eq endof(BH) = 9499 .
+	eq endof(AI) = 10999 .
+	eq endof(BI) = 10999 .
+	eq endof(AJ) = 11249 .
+	eq endof(Exit) = 12749 .
+
+endtom)
+
+(rew next(AA,PPos) .)

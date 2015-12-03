@@ -1,0 +1,31 @@
+(view RouteName from TRIV to TOPOLOGY is
+      sort Elt to RouteName .
+endv)
+
+(tomod RBCTABLE is protecting NAT-TIME-DOMAIN . 
+  protecting TOPOLOGY .
+  protecting SET{RouteName} * (sort Set{RouteName} to SetOfRouteNames,
+                                    sort Elt{RouteName} to EltRouteName) .
+
+  op possibleNextRoutes : Track ->  SetOfRouteNames .
+  op endOfAuthority : RouteName -> Nat .
+
+  eq possibleNextRoutes(Entry) = (RouteName1A, RouteName1B) .
+  eq possibleNextRoutes(AA) = (RouteName3, RouteName2) .
+  eq possibleNextRoutes(AB) = (RouteName3, RouteName2) .
+  eq possibleNextRoutes(AC) = (RouteName3) .
+  eq possibleNextRoutes(BC) = (RouteName2) .
+  eq possibleNextRoutes(BD) = (RouteName4) .
+  eq possibleNextRoutes(AD) = (RouteName4) .
+  eq possibleNextRoutes(AE) = (RouteName4) .
+  eq possibleNextRoutes(AF) = (RouteName4) .
+
+
+  eq endOfAuthority(RouteName1A) = 3449 .
+  eq endOfAuthority(RouteName1B) = 3249 .
+  eq endOfAuthority(RouteName2) = 6499 .
+  eq endOfAuthority(RouteName3) = 6499 .
+  eq endOfAuthority(RouteName4) = 7999 .
+
+endtom)
+

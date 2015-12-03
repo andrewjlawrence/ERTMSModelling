@@ -1,0 +1,55 @@
+(tomod MSGS is protecting NAT-TIME-DOMAIN-WITH-INF .
+   
+    *** these messages are used to communicate between the RBC and the interlocking.
+       msgs req grant deny : Nat -> Msg .
+ 
+    *** these messages are used to communicate between the train and the interlocking.
+       msgs trans : Nat -> Msg . 
+
+    *** these messages are used to communicate between the train and the RBC
+    *** The train can request a movement authority from the RBC. 
+       msgs reqma : Oid -> Msg .
+    *** The RBC can grant a movement authority
+       msgs grantma pos  : Oid Nat -> Msg .
+       
+       var N : Nat .
+       var P : NzNat .       
+   
+       op _div_ : Nat NzNat -> Nat .  
+       
+       ceq N div P = 0 if P > N .
+       ceq N div P = s((N monus P) div P) if P <= N .  
+ 
+       ops train1 train2 inter1 rbc1 : -> Oid [ctor] .
+
+       --- We define 2 constants; the max speed of a train and the track length.
+       ops tlength tseglength numtseg : -> Nat .
+       
+       eq tlength = 250 .
+       eq tseglength = 50 .
+       eq numtseg = 5 .
+
+
+       vars REST,CURRENT : Configuration .
+       var OCURRENT : ObjectConfiguration .
+       vars CON1,CON2 : NEConfiguration .
+       var MSG1 : Msg .
+
+*** The delta operation captures the transition of time and distributes time evenly over all objects.
+
+       op delta : Configuration -> Configuration [frozen]  . 
+       crl [delta0] : {OCURRENT} => {delta(OCURRENT)} in time 1 if mte(OCURRENT) >= 1 .
+       eq [delta1] : delta(CON1 CON2) = delta(CON1)delta(CON2) .
+
+
+*** The mte operation computes the maximum elapsed time.
+
+    	
+	op mte : Configuration -> TimeInf [frozen (1)] .
+	eq mte(none) = INF .
+	eq mte(CON1 CON2) = min(mte(CON1),mte(CON2)) .
+	eq mte(M:Msg) = 0 .
+	
+	
+
+endtom)

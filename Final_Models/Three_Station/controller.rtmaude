@@ -1,0 +1,43 @@
+*************************
+*** Random Controller ***
+*************************
+
+(tomod CONTROLLER is protecting POSRAT-TIME-DOMAIN-WITH-INF .
+  protecting NAT .
+  protecting MSGS .
+  protecting CONTROLTABLE .
+   
+  class Controller | counter : NNegRat . 
+  
+  vars O1, O2 : Oid .
+  var RN : RouteName .
+  var SETRN1 : SetOfRouteNames .
+  var N : NNegRat .
+  var R : Time .
+
+  op requestTime : -> NNegRat .
+  eq requestTime = 30 .
+
+  eq mte(< O1 : Controller | >) = INF .
+
+  *** counter has reached 0 so reset and request next route
+  ceq delta(< O2 : Controller | counter : N >, R ) 
+     =
+     routerequest(randomRoute) < O2 : Controller | counter : (requestTime monus (R monus N)) > 
+     if (N < R) .
+
+  *** Change counter without request
+  ceq delta(< O2 : Controller | counter : N   >, R)
+     =
+     < O2 : Controller | counter : (N monus R) >
+     if not (N < R) .
+
+  op randomRoute : -> RouteName .
+  rl randomRoute => RouteName1A .
+  rl randomRoute => RouteName1B .
+  rl randomRoute => RouteName2 .
+  rl randomRoute => RouteName3 .
+  rl randomRoute => RouteName4 .
+  rl randomRoute => RouteName5 .
+endtom)
+

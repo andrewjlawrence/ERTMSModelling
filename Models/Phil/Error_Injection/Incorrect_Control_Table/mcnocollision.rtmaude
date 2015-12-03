@@ -1,0 +1,64 @@
+(tomod MODEL-CHECK-NO-COLLISIONS is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting TOPOLOGY .
+  protecting DISCRETE-SINGLE-TRAIN .
+  protecting CONTROLLER .
+  protecting RADIOBLOCKPROCESSOR .
+
+
+  vars O1,O2,O1',O2',O3,O4,O5,O6 : Oid .
+  vars N1,N2,N1',N2', N3 : Nat .
+  var R : Time .
+  var B : Bool .
+  vars T1,T2,T1',T2' : Track .
+  var P : Prop .
+
+  vars REST,REST2 : Configuration .
+
+  op nocrashTracks : Oid Oid -> Prop [ctor] .
+  op nocrashDistance : Oid Oid -> Prop [ctor] .
+
+  *** No two trains on one track
+  eq { REST  < O2 : Train |  tseg : T2 , dist : N2 >  < O1 : Train |  tseg : T1 , dist : N1 > }
+       |= nocrashTracks(O1, O2) = (not (T1 == Entry) and not(T2 == Entry) and
+                                   not(T1 == Exit) and not(T2 == Exit))
+				   implies not (T1 == T2) .
+
+  *** Trains more than a certain distance apart.
+  eq { REST  < O2 : Train |  tseg : T2 , dist : N2 >  < O1 : Train |  tseg : T1 , dist : N1 > }
+       |= nocrashDistance(O1, O2) = (not (T1 == Entry) and not(T2 == Entry)
+                                     and not(T1 == Exit) and not(T2 == Exit)) and
+                                     (T1 == T2 or
+				      T1 == next(T2, normal) or T1 == next(T2, reverse) or
+				      T2 == next(T1, normal) or T2 == next(T1, normal))				   
+				     implies ((N2 monus N1 > 100) or (N1 monus N2 > 100)) .
+
+
+  eq {delta(REST)REST2} |= P = {REST REST2} |= P . 
+endtom)
+
+
+(mc {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+    } |=u [] nocrashTracks(train1,train2)  .)
+
+
+(mc {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : acc, dist : 0, speed : 1, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | avaliableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+    } |=u [] nocrashDistance(train1,train2)  .)
+
+eof .
+
+*** (N1 monus N2 > 50 or N2 monus N1 > 50) .
+*** not (T1 == T2) or (T1 == Entry or T2 == Entry) .
+*** Rewriting rules to deal with intermediate and initial states

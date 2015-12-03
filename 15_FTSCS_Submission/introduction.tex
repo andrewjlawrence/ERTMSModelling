@@ -1,0 +1,86 @@
+\section{Introduction}
+
+% “Introduction: in general, could you introduce the problem in a
+% sentence or two for the non-expert? What is an interlocking”
+
+
+The European Rail Traffic Management System (ERTMS) / European Train
+Control System (ETCS) is a European signalling, control and train
+protection system designed to allow for high speed travel, to increase
+capacity, and to facilitate cross-border traffic movements
+\cite{ERTMS}. ERTMS/ETCS is a complex system of systems, made up by
+distributed components. It is specified at four different levels,
+where each level defines a different use as a train control system. In
+our paper we consider ERTMS/ETCS Level 2, which is characterised by
+continuous communications between trains and a radio block centre.
+
+The switch from classical railway signalling systems to ERTMS/ETCS
+train control poses a number of research questions for the formal methods
+community. Can safety be guaranteed? Can formal methods be used to
+confirm that such a switch improves capacity? Is it possible to
+predict capacity using formal methods? To address such questions it is
+necessary to develop and analyse timed or hybrid models. ERTMS/ETCS
+Level 2 takes speed and braking curves of each individual train into
+account. These determine the train's braking point well in advance of
+the end of authority that the signalling system had granted to this
+train. Such an approach is in contrast to classical signalling
+systems, which treat all trains in the same way. Therefore, they need
+to be designed for worst case braking. Consequently, in
+formal safety analysis, such traditional systems can be treated on a purely
+logical level, ignoring the aspect of time -- see, e.g.,
+\cite{sttt14,JamesMNRST14}.
+
+An ERTMS/ETCS system consists of a controller, an interlocking (a
+specialised computer that determines if a request from the controller
+is ``safe''), a radio block centre, track equipment, and a number of
+trains. While the ERTMS/ ETCS standard details the interactions between
+trains and track equipment (e.g., in order to obtain concise train
+position information) and radio block centre and trains (e.g., to hand
+out movement authorities), the details of how controller, interlocking
+and radio block centre interact with each other are left to the
+suppliers of signalling solutions such as our industrial partner
+Siemens Rail Automation UK. In this paper we work with
+the implementation as realised by Siemens. In the following we refer
+to this system simply as ERTMS.
+
+One development step when building an ERTMS system consists of
+developing a so-called detailed design. Given geographical data such
+as a specific track layout and what routes through this track layout
+shall be used, the detailed design adds a number of tables that
+determine the location specific behaviour of interlocking and radio
+block centre. The objective of our modelling is to provide a formal
+argument that a given detailed design is safe. Here we focus on
+collision freedom, though our model is extensible for dealing with
+further safety properties, and possibly also with performance
+analysis.
+
+We base our modelling approach on Real-Time Maude, which is a language
+and tool supporting the formal object-oriented specification and
+analysis of real-time and hybrid systems. In order to obtain a faithful model of
+ERTMS/ETCS level 2 on the design level, we follow a systematic
+approach, established by the Swansea Railway Verification
+Group.
+%% %
+%% First, we develop a domain specific language that allows us to
+%% represent the rail yard under discussion.
+%% %
+%% Then, we systematically identify the system's entities and determine the
+%% information flow between them.
+%% %
+%% Finally, we provide a number of translation tables: static elements
+%% such as the track plan and the various tables are specified as data
+%% types using Maude equations; the ERTMS/ETCS components are represented
+%% as objects; their message exchange according to the rules laid down
+%% in the standard or by Siemens is captured by rewrite rules.
+
+This paper extends our location-specific modelling presented in past work~\cite{old} to a generic and far more detailed modelling. It is
+organised as follows. First, we introduce the ERTMS Level 2 standard,
+%describe the detailed design of a pass-through station, 
+and briefly discuss high level safety properties for ERTMS. Then, we
+give a short presentation of Real-Time Maude with a focus on standard
+specification techniques for hybrid systems. In Section 4, we present
+our modelling of ERTMS in Real-Time Maude, discussing each component
+in detail. In Section 5, we validate our model by simulation and
+error injection. Finally, we present model checking results and put
+our approach in the context of related work.
+

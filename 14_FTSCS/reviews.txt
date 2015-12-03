@@ -1,0 +1,202 @@
+From: FTSCS 2014 <ftscs2014@easychair.org>
+Subject: FTSCS 2014 notification for paper 39
+Date: 3 October 2014 22:55:58 BST
+To: Markus Roggenbach <m.roggenbach@swansea.ac.uk>
+
+Thank you very much for submitting the paper 
+
+  Modelling and Analysing the European Rail Traffic Management System in Real-Time Maude
+
+to the Third International Workshop on Formal Techniques for
+Safety-Critical Systems (FTSCS 2014).  
+
+We are pleased to inform you that your paper has been ACCEPTED
+for inclusion in the preproceedings,
+and for presentation at the workshop. 
+
+We attach the review reports.  In producing the workshop proceedings
+version of your paper, we ask you to consider all the comments carefully and make the best possible effort to address all the issues raised.
+
+There were 40 papers submitted, many of very good quality, and only 14
+regular/tool papers (35%) have been accepted. In addition, we have
+accepted 2 out of 2 position/work-in-progress papers. Members of  the
+programme committee have discussed the papers actively, and the
+decision is based not only on the attached reports, but (in
+particular!) also on extensive discussions.   
+
+The hard deadline for submission of the workshop version of your paper is 
+October 26.  Please, follow all the instructions for authors provided by 
+Springer
+(http://www.springer.com/computer/lncs?SGWID=0-164-6-793341-0)
+carefully. You may use one additional page (6 pages for position/work-in-progress papers). 
+
+We, of course, expect at least one of the authors to attend and present the paper.  
+
+Please registering for the event (and maybe the main ICFEM conference)
+as soon as possible.  The registration page is available at
+http://icfem2014.uni.lu/registration.php 
+
+If you need a visa to Luxembourg to attend the event, please start the
+process ** as soon as possible **! 
+For visa issues, please see the web site http://icfem2014.uni.lu/location.php
+
+We look forward to seeing you in Luxembourg!
+
+Best regards,
+
+Cyrille Artho and Peter Ölveczky
+(FTSCS 2014 PC Chairs)
+
+
+----------------------- REVIEW 1 ---------------------
+PAPER: 39
+TITLE: Modelling and Analysing the European Rail Traffic Management System in Real-Time Maude
+AUTHORS: Andrew Lawrence, Ulrich Berger, Phillip James, Markus Roggenbach and Monika Seisenberger
+
+OVERALL EVALUATION: 1 (weak accept)
+REVIEWER'S CONFIDENCE: 5 (expert)
+
+----------- REVIEW -----------
+This paper summarizes a modeling and analysis approach for railway
+traffic management. It explains the formalization by a toy case
+study. This certainly is a safety-critical system and railway analysis
+holds lots of attention and is done in different ways. 
+
+It is entirely unsurprising that such railway systems can be modeled
+in Real-Time Maude, considering the plethora of other available case
+studies using RTM. Nevertheless, this is an important topic and a
+complete paper on this, in the fullness of time, would make a good
+submission to this workshop in the future.
+
+
+
+
+Comments for the authors:
+
+Check "brake" (slow down) vs "break" (be destroyed) throughout the
+paper. All instances of "break" should be "brake" instead.
+   Done
+
+Figure 3 is nice when viewed in color, but please improve the contrast
+for greyscale print-outs.
+   PDJ contacts Andy
+
+Reference 3 was published in "FMOODS" not in "FMOOBDS", just remove a
+"B" there.
+   Done
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 39
+TITLE: Modelling and Analysing the European Rail Traffic Management System in Real-Time Maude
+AUTHORS: Andrew Lawrence, Ulrich Berger, Phillip James, Markus Roggenbach and Monika Seisenberger
+
+OVERALL EVALUATION: -1 (weak reject)
+REVIEWER'S CONFIDENCE: 3 (medium)
+
+----------- REVIEW -----------
+This short paper reports work-in-progress on the formalization of the
+European Rail Traffic Management System in Real-Time Maude. The paper
+presents two simple cases studies where safety properties have been
+verified.  On the positive side, the subject of this paper is well
+within the scope of the workshop.  Unfortunately, the paper is too
+sketchy even for the "Position/Work-in-Progress" category.  It doesn't
+provide enough information about the scope of the project, the
+technical objectives, and the significance of the contribution. For
+example, it's unclear, at least for this reviewer, how complete is
+their ERTMS model. From the Maude snippets that are provided in the
+paper, it seems that the authors have only modeled a few scenarios.
+Furthermore, as the authors acknowledge, the work presented in this
+paper was already reported in WADT2014
+(http://wadt2014.cs.ovgu.de). The current submission is a bit longer
+(5 pages vs 2 pages) but doesn't provide any additional information
+with respect to the paper in WADT 2014. Since this work is relevant to
+the formal methods community, I strongly advise the authors to revisit 
+the manuscript and submit a regular research paper next time.
+
+Detailed comments
+---------------
+
+- In general, the figures are hard to read. Please use better quality
+  settings for them.
+
+contacted Helen for a ERTMS pic with higher resolution.
+
+p1. Abstract is missing.
+  Done
+
+p1. Define ERTMS before using it as an acronym.
+  Done
+
+p1.s1. "The railway has been a Boolean ..." --> "The railway system (?) has been
+modeled (?) as a Boolean ..."
+  Done
+
+p2.s2. "This property can be established in a generic." How is this property established?
+in Maude?, by hand?
+  Done
+
+p2.s2 "They don't include ..." --> "They do not include ..."
+  Done
+
+p2.s2 "This allows us to specify and prove the safety of the system and to study the system
+performance ..." What do you mean by 'the safety'? Do you mean a specific property? 
+or maybe 'safety properties'. Furthermore, what kind of performance are you referring to?
+How do you measure it? 
+
+  Done
+
+
+p5.s5. Please identify the slow and the fast aircraft in the text and the figures. 
+  Done
+
+
+p5.s5. "As one can see on the blue curves, the slow train dominates the system." Please explain.
+
+  Done
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 39
+TITLE: Modelling and Analysing the European Rail Traffic Management System in Real-Time Maude
+AUTHORS: Andrew Lawrence, Ulrich Berger, Phillip James, Markus Roggenbach and Monika Seisenberger
+
+OVERALL EVALUATION: 2 (accept)
+REVIEWER'S CONFIDENCE: 4 (high)
+
+----------- REVIEW -----------
+This is a work-in-progress short paper.  The paper presents the modelling and analysis of ERTMS (the new European railway control system) in a Real-Time Maude, which provides hybrid system modelling capabilities.  Two simple track layouts, with trains, interlocking and radio controller, are modelled in Maude.  This model is used to simulate train traffic and verify non-overlap properties between trains.
+
+Positive points:
+
++ A very interesting application of formal methods in an important concrete application domain.
+
++ The paper is clearly written and reads easily.
+
+Negative points:
+
+- The description of the formalisation really requires some good knowledge of Maude.  Some explanations are provided but not enough to be able to make sense of the provided Maude fragments without prior knowledge of the language.
+
+Done.
+
+- It is uncertain how the approach will scale up.  The examples treated are really small.
+
+Done.
+
+Details:
+
+- fig.1 the text is unreadable, "ETRMS" --> "ERTMS"
+
+Done.
+
+===========
+
+open:
+- pic by Helen
+- pics by Andy
+- reduce to 5 pages
+- spell-check
+- proof read
+
+
+
+
+

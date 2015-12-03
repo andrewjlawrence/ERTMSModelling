@@ -1,0 +1,64 @@
+(tomod ERTMS is protecting NAT-TIME-DOMAIN .
+       protecting DISCRETE-SINGLE-TRAIN .
+       protecting EXTERNAL-DISCRETE-TRAINS .
+       protecting INTERLOCKING .
+       protecting RADIOBLOCKPROCESSOR .
+       protecting CONTROLLER .
+
+
+ vars T1,I1 : Oid .
+ var REST : Configuration .
+ 
+ ops initnormalstate initreversestate : -> GlobalSystem .
+ ops initinterreverse initinternormal : -> Configuration .
+ ops initialtrainstate1 initialtrainstate2 : -> Configuration .
+ ops initrbcnormal initrbcreverse : -> Configuration .
+ ops initialcontrollerstate : -> Configuration .
+ 
+
+*** Rule to define the controllers initial state
+ rl [initcontroller] : initialcontrollerstate => < ctr1 : Controller |  routes : (RouteName1A, RouteName1B, RouteName2, RouteName3, RouteName4), counter : 500  > .
+
+*** Rule to define the interlockings initial state
+rl [initintn] : initinternormal => < inter1 : Inter | state : idle,  routeset : (RouteName1A |-> true, RouteName1B |-> false, RouteName2 |-> false, RouteName3 |-> true, RouteName4 |-> false) ,  routelocked : (RouteName1A |-> true, RouteName1B |-> false, RouteName2 |-> false, RouteName3 |-> true, RouteName4 |-> false), occ : ( BC |-> false, BD |-> false, AE |-> false, AD |-> false, AC |-> false, AB |-> false, AA |-> false, AF |-> false,  Exit |-> false),  pointsnormal : (P1 |-> true, P2 |-> true ) ,  pointsreverse : (P1 |-> false, P2 |-> false) > .
+
+rl [initintr] : initinterreverse => < inter1 : Inter | state : idle,  routeset : (RouteName1A |-> false, RouteName1B |-> true, RouteName2 |-> true, RouteName3 |-> false, RouteName4 |-> false) ,  routelocked : (RouteName1A |-> false, RouteName1B |-> true, RouteName2 |-> true, RouteName3 |-> false, RouteName4 |-> false), occ : ( BC |-> false, BD |-> false, AE |-> false, AD |-> false, AC |-> false, AB |-> false, AA |-> false, AF |-> false,  Exit |-> false),  pointsnormal : (P1 |-> false, P2 |-> false ) ,  pointsreverse : (P1 |-> true, P2 |-> true) > .
+
+*** Rule to define the RBCs initial state 
+ rl [intrbcnormal]  : initrbcnormal => < rbc1 : RBC | state : rbcidle, lasttrain : train1,  ma : (train1 |-> 0, train2 |-> 0) , trainpos : (train1 |-> 0, train2 |-> 0) , trainroute : emptymapor,  occ : ( BC |-> false, BD |-> false, AE |-> false, AD |-> false, AC |-> false, AB |-> false, AA |-> false, AF |-> false,  Exit |-> false), trains : (train1, train2) , routeproceed : (RouteName1A |-> false, RouteName1B |-> true, RouteName2 |-> true, RouteName3 |-> false, RouteName4 |-> false), curreq : empty  > .
+
+ rl [intrbcreverse]  : initrbcreverse => < rbc1 : RBC | state : rbcidle, lasttrain : train1,  ma : (train1 |-> 0, train2 |-> 0) , trainpos : (train1 |-> 0, train2 |-> 0) , trainroute : emptymapor,  occ : ( BC |-> false, BD |-> false, AE |-> false, AD |-> false, AC |-> false, AB |-> false, AA |-> false, AF |-> false,  Exit |-> false), trains : (train1, train2) , routeproceed : (RouteName1A |-> false, RouteName1B |-> true, RouteName2 |-> true, RouteName3 |-> false, RouteName4 |-> false), curreq : empty  > .
+
+*** Initial state of the trains
+rl [inittr1] : initialtrainstate1 => < externtrains : ExternalTrains | maxspeed : (train1 |-> 120, train2 |-> 70), trains : (train1, train2), nexttrain : selecttrain((train1, train2)) > .
+
+***class Train | state : TrainState, dist : Nat, speed : Nat, ac : Nat,  ma : Nat, tseg : Track , maxspeed : Nat, troute : TRoute, nroute : RouteName .
+***rl [inittr2] : initialtrainstate2 => < train3 : Train | maxspeed : (train1 |-> 7, train2 |-> 3), trains : (train1, train2), nexttrain : selecttrain((train1, train2)) > .
+
+   eq initreversestate = {initialcontrollerstate 
+                          initialtrainstate1
+    		          initrbcreverse
+		          initinterreverse} .
+
+   eq initnormalstate = {initialcontrollerstate 
+                         initialtrainstate1
+    		         initrbcnormal
+		         initinternormal} .
+
+endtom) 
+
+*** Some tests with no trains in the track
+***(trew initreversestate in time <= 50 .)
+***(trew initreversestate in time <= 175 .)
+***(trew initnormalstate in time <= 50 .)
+(trew initnormalstate in time <= 162 .)
+(rew 120 * 120 .)
+***(trew initialstate1 in time <= 100 .)
+***(trew initialstate1 in time <= 150 .)
+***(trew initialstate1 in time <= 200 .)
+***(trew initialstate1 in time <= 250 .)
+***(trew initialstate1 in time <= 300 .)
+
+*** search to check that the train enters the branch
+
+***(tsearch  initreversestate =>* {REST < train1 : Train | tseg : BC >}  in time < 200 .)

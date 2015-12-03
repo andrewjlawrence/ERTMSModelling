@@ -1,0 +1,373 @@
+Modelling - new approach
+========================
+Topology
+========
+
+--- all possible routes in the tracklayout,
+--- not to be mixed up with all possible paths in the layout, the station has only two paths;
+sort TRoute .
+ops  TRoute1A, TRoute1B, TRoute2, TRoute3, TRoute4 : -> TRoute .
+
+
+--- Nulltrack, to be used as Errortrack.
+sort Track .
+ops AA AB AC AD AE AF Exit : -> Track .
+ops BC BD Nulltrack : -> Track .
+
+sort Point .
+ops P1 P2 : -> Point . 
+
+sort PointPos .
+ops normal reverse : -> PointPos .
+var PPos : PointPos .
+
+
+-- note the second argument of next is not always needed.
+op next : Track PointPos -> Track . 
+eq next(AA,PPos) = AB .
+eq next(AB,normal) = AC .
+eq next(AB,reverse) = BC .
+eq next(BC,PPos) = BD .
+eq next(AC,PPos) = AD .
+eq next(AD,normal) = AE .
+eq next(AD,reverse) = Nulltrack .
+eq next(AE,PPos) = AF .
+eq next(AE,PPos) = AF .
+eq next(BD,reverse) = AE .
+eq next(BD,normal) = Nulltrack .
+eq next(AF,PPos) = Exit .
+
+
+-- which point corresponds to a Track?
+op TrackToPoint : Track -> Point .
+eq TrackToPoint(AB) = P1 .
+eq TrackToPoint(AE) = P2 .
+
+
+op endof : Track -> Nat .
+eq endof(AA) = 1499 .
+eq endof(AB) = 1749 .
+eq endof(AC) = 3249 .
+eq endof(BC) = 3249 .
+eq endof(AD) = 4749 .
+eq endof(BD) = 4749 .
+eq endof(AE) = 4999 .
+eq endof(AF) = 6499 .
+eq endof(Exit) = 7999 .
+
+
+--- train: is my pos...
+--- this refers to another function possibly needed but I forgot.
+
+op endofTRoute : TRoute -> Track .
+eq endofTRoute(TRoute1A) =  AC .
+eq endofTRoute(TRoute1B) = BC .
+eq endofTRoute(TRoute2) = AF .
+eq endofTRoute(TRoute3) = AF .
+eq endofTRoute(TRoute4) = Exit .
+
+
+--- to go to rbc file
+--- sort RouteName .
+--- ops  RouteName1A RouteName1B RouteName2 RouteName3 RouteName4 : -> RouteName .
+
+endtom)
+
+
+
+
+--- Controltable.rtmaude
+
+--- for skype meeting: mybe we can talke the sets and Maps quickly through.
+(tomod CONTROLTABLE is protecting NAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting MSGS .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting SET{RouteName} * (sort Set{RouteName} to SetOfNRoutes,
+                                    sort Elt{RouteName} to EltNRoutes) .
+       protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTB,
+                                     sort Entry{Track,Bool} to EntryTB) .
+       protecting MAP{Point,Bool} * (sort Map{Point,Bool} to MapPB,
+                                     sort Entry{Point,Bool} to EntryPB) .
+       protecting MAP{RouteName,Bool} * (sort Map{RouteName,Bool} to MapRNB,
+                                         sort Entry{RouteName,Bool} to EntryRNB) .
+
+       op clearTracks : RouteName -> SetOfTracks .
+       op normalpts : RouteName -> SetOfPoints .
+       op reversepts : RouteName -> SetOfPoints .
+       op checkClear : RouteName MapTB -> Bool .
+       op checkClearAux : SetOfTracks MapTB -> Bool .  
+       op RoutePointsSet : RouteName MapPB MapPB -> Bool .
+       op RoutePointsSetAux : SetOfPoints MapPB -> Bool .
+       ops setPointsNormal setPointsReverse : RouteName MapPB -> MapPB .
+       ops setPointsAux setPointsAux : SetOfPoints MapPB -> MapPB .
+       op setRoute : RouteName MapRNB -> MapRNB .
+       op opposingRoutes : RouteName -> SetOfNRoutes .
+       op opposingRoutesSet : RouteName MapRNB -> Bool .
+       op opposingRoutesSetAux : SetOfNRoutes MapRNB -> Bool .
+       op unsetRoutes : SetOfNRoutes MapRNB -> MapRNB .
+       op nextTRoute : Track MapPB MapPB -> TRoute .
+       op initialNRouteSet : MapRNB -> Bool .
+       op getInitialNRoute : MapRNB -> RouteName .
+       op continuation : RouteName MapRNB -> RouteName .
+       op nextRouteSet : RouteName MapRNB -> Bool . 
+       *** operations to release a route and check whether if a track segment release a route
+       op releaseRoute : Track MapRNB -> MapRNB .
+       op routeRelease : Track -> Bool .
+
+       var MAPTB1 : MapTB .
+       vars MAPPB1, MAPPB2 : MapPB .
+       vars MAPRNB1 : MapRNB .
+       var AN : Track .
+       var SETRN1 : SetOfNRoutes .
+       var SETT1 : SetOfTracks .
+       var PN : Point .
+       var RouteNameN : RouteName .
+       var DT : Nat .    
+       var SETP1 : SetOfPoints .
+
+
+--- this seems fine
+       eq clearTracks(RouteName1A) = (AA, AB, AC) . 
+       eq clearTracks(RouteName1B) = (AA, AB, BC) . 
+
+       eq clearTracks(RouteName2) = (BD, AE, AF) .
+       eq clearTracks(RouteName3) = (AD, AE, AF) .
+       eq clearTracks(RouteName4) = (Exit) .     
+
+       eq normalpts(RouteName1A) = (P1) .
+       eq reversepts(RouteName1A) = empty .
+       eq normalpts(RouteName1B) = empty .
+       eq reversepts(RouteName1B) = (P1) .
+       eq normalpts(RouteName2) = empty .
+       eq reversepts(RouteName2) = (P2) .
+       eq normalpts(RouteName3) = (P2) .
+       eq reversepts(RouteName3) = empty .
+       eq normalpts(RouteName4) = empty .
+       eq reversepts(RouteName4) = empty .
+
+       *** The following defines a set of opposing routes for each route.              
+
+
+--- this should become opposing pointlockings
+--- will be needed when interlocking needs to check whether a point is locked in a conflicting way - details later.
+
+
+--- instead of whether an opposing route is set: whether a point is locked in an opposing way.
+       *** For a given route and a map containing the routes set we can compute whether an opposing route is set.
+       eq opposingRoutesSet(RouteNameN, MAPRNB1) = opposingRoutesSetAux(opposingRoutes(RouteNameN), MAPRNB1) .
+       eq opposingRoutesSetAux((RouteNameN, SETRN1), MAPRNB1) = MAPRNB1[RouteNameN] or opposingRoutesSetAux(SETRN1, MAPRNB1) .
+
+       *** We can check whether the track segments within a route are clear.
+       eq checkClear(RouteNameN,MAPTB1) = checkClearAux(clearTracks(RouteNameN), MAPTB1) .
+       eq checkClearAux((AN , SETT1),MAPTB1) = (not MAPTB1[AN]) and checkClearAux(SETT1, MAPTB1) .
+       eq checkClearAux(empty,MAPTB1) = true .
+
+--- I would be good if this could stay
+
+       *** Set the Points for a given route
+       eq RoutePointsSet(RouteNameN,MAPPB1,MAPPB2) = RoutePointsSetAux(normalpts(RouteNameN),MAPPB1) and RoutePointsSetAux(reversepts(RouteNameN),MAPPB2) .
+       eq RoutePointsSetAux((PN, SETP1),MAPPB1) = MAPPB1[PN] and RoutePointsSetAux(SETP1,MAPPB1) .
+       eq RoutePointsSetAux(empty,MAPPB1) = true .
+       
+       eq setPointsNormal(RouteNameN,MAPPB1) = setPointsAux(normalpts(RouteNameN),MAPPB1) .
+       eq setPointsReverse(RouteNameN,MAPPB1) = setPointsAux(reversepts(RouteNameN),MAPPB1) .
+       eq setPointsAux((PN, SETP1),MAPPB1) = insert(PN,true,setPointsAux(SETP1, MAPPB1)) .
+       eq setPointsAux(empty, MAPPB1) = MAPPB1 .
+
+
+--- wouldn't this be unclock the points for a given route.
+       *** Unset the points for a given route
+       eq unsetRoutes(empty, MAPRNB1) = MAPRNB1 .  
+       eq unsetRoutes((RouteNameN,SETRN1), MAPRNB1) = unsetRoutes(SETRN1,insert(RouteNameN, false, MAPRNB1)) .  
+       eq setRoute(RouteNameN,MAPRNB1) = unsetRoutes(opposingRoutes(RouteNameN), insert(RouteNameN, true, MAPRNB1)) . 
+
+
+--- what is covered by the variable  MAPRNB1, isn't that aways the case? Ah, only needed for the function below. 
+       *** Compute the next route for a given route
+       eq continuation(RouteName1A, MAPRNB1) = RouteName3 .
+       eq continuation(RouteName1B, MAPRNB1) = RouteName2 .
+       eq continuation(RouteName2, MAPRNB1) = RouteName4 .
+       eq continuation(RouteName3, MAPRNB1) = RouteName4 .
+      
+       *** Compute whether the next route is set
+       eq nextRouteSet(RouteName1A, MAPRNB1) = MAPRNB1[RouteName3] .
+       eq nextRouteSet(RouteName1B, MAPRNB1) = MAPRNB1[RouteName2] .
+       eq nextRouteSet(RouteName2, MAPRNB1) = MAPRNB1[RouteName4] .
+       eq nextRouteSet(RouteName3, MAPRNB1) = MAPRNB1[RouteName4] .
+
+--- I would assume this is not needed, as AB is not at the end of a route.
+       *** Compute the next topological route given a track segment with a point and the current point settings     
+       ceq nextTRoute(AB ,MAPPB1, MAPPB2) = R1 if MAPPB1[P1] and not MAPPB2[P1] .
+       ceq nextTRoute(AB ,MAPPB1, MAPPB2) = R2 if not MAPPB1[P1] and MAPPB2[P1] .
+
+   *** nroutenext(RouteNameN,MAPPB1,MAPPB2)
+
+--- this assumes that in modellchecking the equations are used randomly?
+
+       eq initialnroute(R1) = RouteName1A .
+       eq initialnroute(R2) = RouteName1B .
+
+       op randomRoute : -> RouteName .
+       eq randomRoute = RouteName1A .
+       eq randomRoute = RouteName1B .
+       eq randomRoute = RouteName2 .
+       eq randomRoute = RouteName3 .
+       eq randomRoute = RouteName4 .
+       
+       eq initialNRouteSet(MAPRNB1) = MAPRNB1[RouteName1A] or MAPRNB1[RouteName1B] .
+       ceq getInitialNRoute(MAPRNB1) = RouteName1A if MAPRNB1[RouteName1A] .
+       ceq getInitialNRoute(MAPRNB1) = RouteName1B if MAPRNB1[RouteName1B] .
+
+       eq routeRelease(AC) = true .
+       eq routeRelease(BC) = true .
+       eq routeRelease(AF) = true .
+       eq routeRelease(Exit) = true .
+       eq routeRelease(AN) = false [owise] .         
+
+
+--- what is this exactly doing? does it mean route1A is set to set to false?
+--- what we would need now is that the points are released, not the routes.
+
+
+       eq releaseRoute(AC, MAPRNB1) = insert(RouteName1A, false, MAPRNB1) .
+       eq releaseRoute(BC, MAPRNB1) = insert(RouteName1B, false, MAPRNB1) .
+       eq releaseRoute(AF, MAPRNB1) = insert(RouteName2, false, insert(RouteName3, false, MAPRNB1)) .
+       eq releaseRoute(Exit, MAPRNB1) = insert(RouteName4, false, MAPRNB1) .
+
+endtom)
+
+\begin{verbatim}
+Control table: 
+Route Normal Reverse Clear 
+R1A     P01          AA,AB,AC,AD 
+R1B            P01   AA,AB,BC,BD 
+R2             P02   BD, AE, AF 
+R3      P02          AD,AE,AF
+
+Release Tables:
+P01: R1A - AC
+     R1B - BC
+P02: R2 - AF
+     R3 - AF
+
+RBC - Table
+Route begin end   possible continuation routes
+R1A   0     1750  R3
+R1B   0     1750  R2
+R2    1750  3500  - 
+R3    1750  3500  -
+\end{verbatim}
+
+
+\begin{verbatim}
+
+Communication between Components:
+=======================
+Interlocking (instant behaviour, all are equations)
+=============================
+Attributes of an interlocking:
+RoutesSet Map {NamedRoutes->Bool}
+PointsLocked Map {Points -> Bool} [was RoutesLocked]
+PointsNormal Map {Point -> Bool}
+PointsReverse Map {Point -> Bool}
+TrackOccupation {Track -> Bool}
+\end{verbatim}
+
+\begin{verbatim}
+
+Message from controller (message: routename to be set).
+Case 1: route already set.
+        do nothing (i.e. message is deleted.)
+        Alternative 1: it could doublecheck occupany and point settings.
+        Alternative 2: we could set it again. 
+
+Case 2: route not set and clearpart of route not free or points are locking in conflicting position
+        do nothing
+
+Case 3: route not set, check whether all segments in clear table are free and 
+                       points are set correct or free to move, i.e. not locked (in conflicting pos.)
+        do: - set route (update map), set points for this route (update map)
+            - message to RBC (send RouteSet map).
+          
+
+
+
+Message from Train: (message contains new occupied tracksegment)
+        do: - sets trackseg to be occupied, frees up previous one.
+            - release: 
+              if new tracksegment is mentioned in releasetable (part of control table)
+              remove Point from PointsLocked
+            - sends TrackOccupation map to RBC.
+               
+        Note there is a separate rule when trains leaves exit tracksegement
+        (message countains topological route).????
+
+
+
+
+
+Message from RBC: (contains routename = request to proceed on a route)
+Case 1: route is still set:
+        do: - lock points on route.
+            - send proceed message to RBC.
+ 
+Case 2: route not set anymore.
+             - do nothing.
+
+
+
+Question: how does train know where to go next?
+Currently in Andi's module next depends on currentsegment and route. 
+[This might need to change to  current point setting from interlocking. 
+We will do this when looking at scenarios.]
+
+
+RBC:
+====
+SetRouteNames (subset of RouteNames)
+ProceedPossible (subset of SetRouteNames) 
+
+instead of :TrainRoutemap: Map {Train -> Route}
+designatedRoutes (set of Pairs of TrainId and RouteNames) 
+[Note both directions should be available TrainId-> RouteName, RouteName->TrainId]
+
+
+
+Message from train (contains movement authority request:
+                    current track (!) + train id.)
+     do: computes current route from TrainRouteMap
+         checks whether there is in RoutesSet a suitable follow up one
+
+         Case 1: there is no suitable one, delete MA request.
+         Case 2: there a suitable follow-up route in SetRoutes,
+               
+                 sends message request-to-procceed(routename) to IX  (Id needed?)
+ 
+       
+Message from interlocking: proceed(routename)
+          RBC puts Routename into ProceedPossible      
+
+          For every RN in ProceedPossibe:
+               - compute eoA(RN)
+               - compute train form designated Id-Routename
+               - send MA(RN) to train
+               - remove RN from ProceedPossible.
+
+               
+     
+
+            
+
+
+Controller:
+==========
+Sends Message: Routerequest (random route), every 10 time steps (can be made random)
+
+
+
+
+

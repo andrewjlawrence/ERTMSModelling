@@ -1,0 +1,76 @@
+\section{Modelling ERTMS in Maude}
+
+To the best of our knowledge, our modelling of ERTMS is the first one
+comprising all ERTMS subsystems required for the control cycle in
+ERTMS/ETCS Application Level 2, c.f.\ Figure 6 in the ERTMS/ETCS
+System Requirements Specification \cite{spec}. For simplicity, we
+consider only uni-directional rail yards, as these exhibit many of the
+components of bi-directional rail yards, but are of a lower complexity
+with regards to the number of routes required within the model. Also,
+we make the standard assumption that trains have no length. This is
+the typical abstraction when one deals with trains whose length is
+shorter than any track length in the given scheme plan. For a detailed
+discussion of the topic see, e.g., our publication discussing train
+length \cite{JamesMNRST14}.
+
+In the following, we provide an overview of our model:\footnote{The models are available at:\\
+{\tt \footnotesize
+ http://www.cs.swan.ac.uk/\%7Ecsmarkus/ProcessesAndData/Models}} first we discuss the static
+data types; then we look at the instantaneously reacting
+sub-systems, i.e., controller, interlocking, and RBC; next, we
+describe how we capture  train behaviour, which requires
+differential equations describing motion; finally, we address how to
+express collision-freedom. We note that our model is generic, with only
+location specific data as a parameter. This location specific data has been encoded manually, however this process could be automated within OnTrack~\cite{james14c}.
+
+%% {\sl For the purpose of reviewing, our models are available at
+%% \begin{center}
+%% \url{http://www.cs.swan.ac.uk/%7Ecsmarkus/Station.zip}.
+%% \end{center}
+%% The \%7E stands for $\sim$ -- in case the link is not clickable. In
+%% case of acceptance, we will make our code available to the scientific
+%% community via a stable webpage.}
+
+\subsection{Datatypes: Location Specific Data and Messages}
+%%%Topology and control/rbc tables.
+\input{lsd.tex}
+\input{messages.tex}
+
+\subsection{Instantaneously Reacting Sub-Systems}
+\label{ssec:instan}
+
+The processing time of controller, interlocking, and RBC is negligible
+compared to the time that it takes a train to pass a track. Thus, in
+our modelling we assume that these three components react
+instantaneously. In Maude this is expressed by saying that these
+components do not pose any time constrains. Here, written for the
+controller:
+%
+\begin{lstlisting}[columns=fixed]
+eq mte(< O1 : Controller | >) = INF .
+\end{lstlisting} 
+
+\vspace{1ex}
+\noindent
+{\bf Controller.}
+\input{controller.tex} 
+
+\vspace{1ex}
+\noindent
+{\bf Interlocking.}
+\input{interlocking.tex} 
+
+\vspace{1ex}
+\noindent
+{\bf RBC.}
+\input{rbc.tex}
+
+%%%Time Dependant Reacting Sub-Systems
+\subsection{Trains}
+\input{trains.tex}
+
+\subsection{Safety Condition}
+\label{sec:safetycondmodelling}
+\input{collisionfreedom.tex}
+
+

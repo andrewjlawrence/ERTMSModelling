@@ -1,0 +1,92 @@
+*****************************
+*** Model Checking Safety ***
+*****************************
+
+(tomod MODEL-CHECK-NO-COLLISIONS is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting TOPOLOGY .
+  protecting SINGLE-TRAIN .
+  protecting CONTROLLER .
+  protecting RADIOBLOCKPROCESSOR .
+  protecting POSRAT-TIME-DOMAIN-WITH-INF .
+
+  vars O1,O2,O1',O2' : Oid .
+  vars N1,N2,N1',N2', N3 : NNegRat .
+  var R : Time .
+  var B : Bool .
+  vars T1,T2,T1',T2' : Track .
+  var P : Prop .
+  var R : Time .
+  
+  vars REST,REST2 : Configuration .
+
+  op nocrashTracks : Oid Oid -> Prop [ctor] .
+  op nocrashDistance : Oid Oid -> Prop [ctor] .
+  op initState : -> GlobalSystem .
+
+
+  eq initState = {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 0, speed : 0, ac : 1,  ma : 1, tseg : Entry ,
+                        maxspeed : 20 >
+     < train2 : Train | state : stop, dist : 0, speed : 0, ac : 1,  ma : 1, tseg : Entry ,
+                        maxspeed : 60 >			
+     < rbc1 : RBC | availableRoutes : empty , designatedRoutes : empty  >
+     *** < ctr1 : Controller | counter : 0 >
+     *** Use the following for round robin controller
+     < ctr1 : Controller | counter : 0 , routes : routeOrder >
+  } .
+
+  *** No two trains on one track
+  eq { REST  < O2 : Train |  tseg : T2 , dist : N2 >  < O1 : Train |  tseg : T1 , dist : N1 > }
+       |= nocrashTracks(O1, O2) = (not (T1 == Entry) and not(T2 == Entry) and
+                                   not(T1 == Exit) and not(T2 == Exit))
+				   implies not (T1 == T2) .
+
+  *** Trains more than a certain distance apart.
+  eq { REST  < O2 : Train |  tseg : T2 , dist : N2 >  < O1 : Train |  tseg : T1 , dist : N1 > }
+       |= nocrashDistance(O1, O2) = (not (T1 == Entry) and not(T2 == Entry)
+                                     and not(T1 == Exit) and not(T2 == Exit)) and
+                                     (T1 == T2 or
+				      T1 == next(T2, normal) or T1 == next(T2, reverse) or
+				      T2 == next(T1, normal) or T2 == next(T1, reverse))				   
+				     implies ((N2 monus N1 > 100) or (N1 monus N2 > 100)) .
+
+
+  eq {delta(REST, R)REST2} |= P = {REST REST2} |= P . 
+endtom)
+
+
+
+
+(tsearch {
+ < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 0, speed : 0, ac : 1,  ma : 1, tseg : Entry ,
+                        maxspeed : 1 >
+     < train2 : Train | state : stop, dist : 0, speed : 0, ac : 1,  ma : 1, tseg : Entry ,
+                        maxspeed : 120 >			
+     < rbc1 : RBC | availableRoutes : empty , designatedRoutes : empty  >
+     *** < ctr1 : Controller | counter : 0 >
+     *** Use the following for round robin controller
+      < ctr1 : Controller | counter : 0 , routes : routeOrder >
+
+      }
+=>*
+{ REST   < train2 : Train | tseg : Exit > }
+in time <= 190 .)
+
+
+
+
+
+*** Bounded model checking for round robin controller
+*** (mc initState |=t [] nocrashDistance(train1,train2) in time <= 300 . )
+*** (mc initState |=t [] nocrashTracks(train1,train2) in time <= 300 . )
+
+
+*** Unbounded model checking for round robin controller
+*** (mc initState |=u [] nocrashDistance(train1,train2) . )
+*** (mc initState |=u [] nocrashTracks(train1,train2) . )
+

@@ -1,0 +1,58 @@
+(view Oid from TRIV to CONFIGURATION is
+    sort Elt to Oid .
+endv)
+
+(tomod RADIOBLOCKPROCESSOR3 is protecting NAT-TIME-DOMAIN . 
+  protecting MSGS .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting SET{Oid} * (sort Set{Oid} to SetO,
+                        sort Elt{Oid} to EltOm) .
+  sort RBCState .
+  ops rbcidle ready wait granted :  -> RBCState [ctor] .
+  
+  
+  class RBC | state : RBCState, lasttrain : Oid, ma : MapON, pos : MapON , curreq : SetO  .
+
+  vars N, N2  : Nat .
+  vars P : NzNat . 
+  vars O : Oid .
+  vars B1,B2 : Bool . 
+  vars T1 : Oid .
+  vars MAP1,MAP2 : MapON .
+
+  var SETO1 : SetO .
+  vars EN1,EN2 : EntryON .
+  var REST : Configuration .
+ 
+  op nexttrack : Nat -> Nat .
+  op endoftrack : Nat -> Nat .
+  eq nexttrack(N) = ((N div tseglength) + 1) rem 5 .
+  eq endoftrack(N) = (((N + 1) * tseglength) monus 1)   .
+
+
+  eq mte(< O : RBC | state : rbcidle >) = 1 .
+  eq mte(< O : RBC | state : ready >) = 0 .
+  eq mte(< O : RBC | state : wait >) = 0 .
+ 
+
+  rl [deltarbc] : delta(< O : RBC | >) => < O : RBC | curreq : empty > .
+  rl [rbcreceivereq] : {reqma(T1) < O : RBC | state : rbcidle > REST} => {< O : RBC | state : ready, lasttrain : T1 > REST} .
+  rl [rbcreceiveloc] : {pos(T1,N) < O : RBC | pos : MAP1  > REST} => {< O : RBC | pos : insert(T1,N,MAP1) > REST} .
+
+  crl [rbcreqtrack] : { < O : RBC | state : ready, pos : MAP1, lasttrain : T1 , curreq : SETO1 > REST} => { < O : RBC | state : wait ,  curreq : (SETO1,T1) > req(nexttrack(MAP1[T1])) REST} if not (T1 in SETO1) .
+  crl [rbcreset] : { < O : RBC | state : ready, lasttrain : T1 , curreq : SETO1 > REST} => {< O : RBC | state : rbcidle > REST} if (T1 in SETO1) .
+  rl [rbcdeny] : {deny(N) < O : RBC | state : wait > REST} => { < O : RBC | state : ready > REST} .
+  rl [rbcgrant] : {grant(N) < O : RBC | state : wait, lasttrain : T1, ma : MAP1  > REST} => {< O : RBC | state : rbcidle, ma : insert(T1,endoftrack(N),MAP1) > grantma(T1, endoftrack(N)) REST} .
+
+
+endtom)
+
+***(trew  {reqma(train1) < rbc1 : RBC | state : rbcidle, lasttrain : train2, ma : (insert(train1,100,empty)), pos : (insert(train,99,empty)) >} in time <= 3 .) 
+***(trew  {reqma(train2) reqma(train1) < rbc1 : RBC | state : rbcidle, lasttrain : train2, ma : (train1 |-> 50,train2 |-> 200), pos : (train1 |-> 49,train2 |-> 199) >} in time <= 3 .) 
+
+***(trew  {req(1)reqma(train2)< rbc1 : RBC | lasttrain : train1,ma :(train1 |-> 50, train2 |-> 200),pos :(train1 |-> 49, train2 |-> 199),state : wait, curreq : empty >} in time <= 3 .) 
+
+***(trew  {grant(2) < rbc1  : RBC | lasttrain : train1, ma : (train1 |-> 100), pos : (train1 |-> 99),state : wait, curreq : empty >} in time <= 3 .) 
+
+***(trew  {deny(1) < rbc1 : RBC | lasttrain : train1,  ma : (train1 |-> 100), pos : (train1 |-> 99), state : wait, curreq : empty >} in time <= 3 .) 

@@ -1,0 +1,81 @@
+*** 
+*** A train system consists of a state, a distance, a speed and an acceleration. 
+*** This train is on a circular track of length 5000 after moving 5000 it reaches the beginning.
+*** It has 4 states corresponding to accelerating, decelerating, stopped  and full speeds.
+***   
+*** In this version the non-determinism  where by messages can be interleaved 
+*** has been removed.
+***
+*** 
+***   
+
+(tomod DISCRETE-SINGLE-TRAIN16 is protecting NAT-TIME-DOMAIN .
+       protecting MSGS .
+
+  sort TrainState .
+  ops  cons acc stop brake :  -> TrainState [ctor] .
+
+  class Train | state : TrainState, dist : Nat, speed : Nat, ac : Nat,  ma : Nat, tseg : Nat , maxspeed : Nat .
+
+ 
+
+
+  sort MyConfig .
+  subsort ObjectConfiguration < MyConfig .
+  subsort EmptyConfiguration < MyConfig .  
+  var MyREST : MyConfig .
+
+  op dma : Nat Nat -> Nat .
+  op bd : Nat -> Nat .
+  op trackseg : Configuration -> Configuration . 
+
+
+  vars N,M1,M2 : Nat .
+  vars P : NzNat . 
+  vars DT,MA,S,A,MAX : Nat .
+  var O : Oid .
+  var OCREST : ObjectConfiguration .
+  var REST : Configuration . 
+
+
+
+  ceq dma(DT,MA) = MA monus DT if DT <= MA .
+  ceq dma(DT,MA) = (tlength monus DT) + MA if MA < DT .
+ 
+  eq bd(S) = ((S * S) + 1) div 2 .
+
+*** The following way of detecting a transition between track segments is inefficient and could be improved.
+
+  crl [transn] : trackseg(< O : Train | dist : DT, tseg : N >) => < O : Train | dist : DT, tseg : N + 1 > trans(DT div tseglength) if N < (DT div tseglength) and N =/= 5 . 
+  crl [trans0] : trackseg(< O : Train | dist : DT, tseg : 4 >) => < O : Train | dist : DT, tseg : 0 > trans(0) if DT < (tlength monus tseglength) . 
+  crl [transn4] : trackseg(< O : Train | dist : DT, tseg : N >) => < O : Train | dist : DT, tseg : N >  if (DT div tseglength) <= N  . 
+
+*** Do we need these two rules??? I think its possible to simplify them and remove one
+ crl [recma] : grantma(O,N) < O : Train | dist : DT, ma : MA > => < O : Train | ma : N > if   MA < N or N < DT .
+ crl [recma2] : grantma(O,N) < O : Train | dist : DT, ma : MA > => < O : Train | ma : MA > if  N <= MA and DT <= N .
+
+*** The following rewrite rules capture the physical behaviour of the train.
+
+  crl [incspeed] : delta(< O : Train | state : acc,  dist : DT, speed : S, ac : A, ma : MA , maxspeed : MAX >)   => pos(O,DT) trackseg(< O : Train |  dist : (DT + S) rem tlength, speed : S + A >)  if S + A < MAX and  bd(S + A) < dma(DT + S, MA) . 
+
+
+  crl [maxspeed] : delta(< O : Train | state : acc, dist : DT, speed : S, ac : A, ma : MA, maxspeed : MAX >)   => pos(O,DT)trackseg(< O : Train | state : cons, dist : (DT + S) rem tlength, speed : MAX >)   if MAX <= S + A and bd(MAX) < dma(DT + S , MA)  .   
+  crl [steadyspeed] : delta(< O : Train | state : cons, dist : DT, speed : S, ac : A, ma : MA >)  => pos(O,DT)trackseg(< O : Train |  dist : (DT + S) rem tlength >)  if bd(S + A)  < dma(DT + S, MA) .
+
+*** if the distance to the MA in the next instance of time is less than or eq to the brakeing distance the train stops
+ 
+
+  crl [accbrake] : delta(< O : Train | state : acc, dist : DT, speed : S, ac : A, ma : MA >) =>   reqma(O)pos(O,DT) trackseg(< O : Train | state : brake, dist : (DT + S)  rem tlength, speed : S monus A >)   if  dma(DT + S, MA)  <  bd(S + A) .
+
+  crl [consbrake] : delta(< O : Train | state : cons, dist : DT, speed : S, ac : A, ma : MA >)   =>  reqma(O) pos(O,DT) trackseg(< O : Train | state : brake, dist : (DT + S)  rem tlength, speed : S monus A >)    if  dma(DT + S, MA)  <  bd(S + A) .
+  crl [braking] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)   => reqma(O) pos(O,DT) trackseg(< O : Train | state : brake, dist : (DT + S)   rem tlength, speed : S monus A >)   if 0 < S monus A and dma(DT + S, MA)  <  bd(S + A) .
+  crl [stopping] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)  => reqma(O) pos(O,DT) trackseg(< O : Train | state : stop,  speed : 0 >)   if 0 == S monus A and dma(DT + S, MA)  <  bd(S + A) .
+  crl [stopped] :  delta(< O : Train | state : stop, dist : DT, speed : S, ac : A, ma : MA >)  => reqma(O) pos(O,DT) < O : Train | >  if  dma(DT + S, MA)  <  bd(S + A) .
+  crl [brakeacc] : delta(< O : Train | state : brake, dist : DT, speed : S, ac : A, ma : MA >)  =>  pos(O,DT) trackseg(< O : Train | state : acc, dist : (DT + S ) rem tlength, speed : S >)   if  bd(S + A)   <= dma((DT + S) , MA) .
+  crl [stopacc] :  delta(< O : Train | state : stop, dist : DT, speed : S, ac : A, ma : MA >)  =>  pos(O,DT) trackseg(< O : Train | state : acc, dist : (DT + S) rem tlength, speed : S >)    if  bd(S + A)   <= dma((DT + S) , MA) .
+
+
+endtom)
+
+
+(trew {< train1 : Train | state : acc, dist : 0, speed : 0, ac : 1, ma : 100, tseg : 0 , maxspeed : 5 >} in time <= 10 .)

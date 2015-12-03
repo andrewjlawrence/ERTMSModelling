@@ -1,0 +1,39 @@
+in rtm-tctl.maude .
+in topology.rtmaude .
+in controltable.rtmaude .
+in msgs.rtmaude .
+in controller.rtmaude .
+***in roundrobin.rtmaude .
+in interlocking.rtmaude .
+in train.rtmaude .
+in rbctables.rtmaude .
+in rbc.rtmaude .
+
+
+*** Run 1 train though
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0, ac : 1,  ma : 1, tseg : Entry , maxspeed : 120 > 
+     < rbc1 : RBC | availableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0 >
+} in time <= 200 .)
+
+**** Run 2 trains through 
+(trew {
+     < inter1 : Inter |  pointPositions : (P1 |-> normal, P2 |-> normal), routeset : empty, occ : empty, pointslocked : empty >
+     < train1 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < train2 : Train | state : stop, dist : 1, speed : 0,  ac : 1,   ma : 1, tseg : Entry , maxspeed : 120 >
+     < rbc1 : RBC | availableRoutes : empty , designatedRoutes : empty  >
+     < ctr1 : Controller | counter : 0  >
+} in time <= 300 .)
+
+
+
+
+eof .
+
+
+
+
+
+

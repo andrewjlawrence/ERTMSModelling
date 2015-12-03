@@ -1,0 +1,34 @@
+In rail control systems, the interlocking provides a safety layer
+between controller and track.
+%
+%%%In ERMTS it further informs the RBC which routes can be granted. 
+%
+To this end, it monitors the physical
+rail yard (\verb|occ| says which tracks are currently occupied,
+\verb|pointPositions| says for each point if it is in normal or in
+reverse position), manages locks (\verb|pointslocked| says if a point
+is currently locked by a route), and stores which routes are
+currently set (\verb|routeset|):
+%
+\begin{lstlisting}[columns=fixed]
+class Inter |  routeset : MapRouteName2Bool, 
+               pointslocked : MapPoint2Bool,
+               occ : MapTrack2Bool, 
+               pointPositions : MapPoint2PointPos  .
+\end{lstlisting}
+
+The interlocking is a passive component, i.e., only upon receiving a
+message it possibly changes its state and/or sends a message. A
+typical rule for preserving safety is the following:
+%
+\begin{lstlisting}[columns=fixed]
+crl  routerequest(RN1) 
+     < O : Inter |  routeset : MAPRNB1, 
+                    occ : MAPTB1, pointslocked : MAPPB3 >
+   => < O : Inter | > if (not checkClear(RN1, MAPTB1)) or 
+                         pointsLocked(RN1, MAPPB3) .
+\end{lstlisting}
+%
+A route request by the controller is ignored in case that the tracks
+specified in the clear table for route \verb|RN1| are occupied or the
+points of route \verb|RN1| are locked in different positions. 

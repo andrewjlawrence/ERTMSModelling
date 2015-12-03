@@ -1,0 +1,22 @@
+An ERTMS controller issues route requests. For a general safety
+analysis, a \emph{random controller} that can make any order of route
+requests should be considered:
+%
+\begin{lstlisting}[columns=fixed]
+op randomRoute : -> RouteName .
+rl randomRoute => RouteName1A . 
+... 
+rl randomRoute => RouteName4  .
+\end{lstlisting}
+%
+However, it is also possible to perform safety analysis relatively to
+a specific strategy, e.g., a \emph{round-robin controller} that
+requests routes as follows -- 1A first, followed by 1B, until route
+4, starting over with 1A again:
+\begin{lstlisting}[columns=fixed]
+eq routeOrder = (RouteName1A : RouteName1B : ... : RouteName4) .
+\end{lstlisting}
+%
+Yet another parameter are the times at which the controller makes
+route requests. For both controllers we work with a constant
+frequency.

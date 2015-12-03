@@ -1,0 +1,66 @@
+
+(view Track from TRIV to TOPOLOGY is
+      sort Elt to Track .
+endv)
+
+(view Point from TRIV to TOPOLOGY is
+      sort Elt to Point .
+endv)
+
+(view PointPos from TRIV to TOPOLOGY is
+      sort Elt to PointPos .
+endv)
+
+
+(tomod CONTROLTABLE is protecting NAT-TIME-DOMAIN .
+       protecting TOPOLOGY .
+       protecting MSGS .
+       protecting SET{Track} * (sort Set{Track} to SetOfTracks,
+                                sort Elt{Track} to EltTrack) . 
+       protecting SET{Point} * (sort Set{Point} to SetOfPoints,
+                                sort Elt{Point} to EltPoint) .
+       protecting MAP{Track,Bool} * (sort Map{Track,Bool} to MapTrackBool,
+                                     sort Entry{Track,Bool} to EntryTrackBool) .
+       protecting MAP{Point,PointPos} * (sort Map{Point,PointPos} to MapPointPos,
+                                     sort Entry{Point,PointPos} to EntryPointPos) .
+       protecting TUPLE[2]{Point,PointPos} * (sort TUPLE[2]{Point,PointPos} to PointPosition,
+                                              op p1_ to point,
+                                              op p2_ to pos)  .
+
+       sort NRoute .
+       ops  NRoute1A, NRoute1B, NRoute2, NRoute3, NRoute4 : -> NRoute .
+
+
+       op clearTracks : NRoute -> SetOfTracks .
+       op normalpts : NRoute -> SetOfPoints .
+       op reversepts : NRoute -> SetOfPoints .
+       op opposingPoints : NRoute -> PointPosition .
+
+*** Equations for route clear tracks ***
+       eq clearTracks(NRoute1A) = (AA, AB, AC) . 
+       eq clearTracks(NRoute1B) = (AA, AB, BC) . 
+       eq clearTracks(NRoute2) = (BD, AE, AF) .
+       eq clearTracks(NRoute3) = (AD, AE, AF) .
+       eq clearTracks(NRoute4) = (Exit) .     
+
+*** Equations for route point settings ***
+       eq normalpts(NRoute1A) = (P1) .
+       eq reversepts(NRoute1A) = empty .
+       eq normalpts(NRoute1B) = empty .
+       eq reversepts(NRoute1B) = (P1) .
+       eq normalpts(NRoute2) = empty .
+       eq reversepts(NRoute2) = (P2) .
+       eq normalpts(NRoute3) = (P2) .
+       eq reversepts(NRoute3) = empty .
+       eq normalpts(NRoute4) = empty .
+       eq reversepts(NRoute4) = empty .
+
+*** Opposing point settings
+
+       eq opposingPoints(RouteName1A) = (P1,reverse) .
+       eq opposingPoints(RouteName1B) = (P1,normal) .
+       eq opposingPoints(RouteName2) = (P2,normal) .
+       eq opposingPoints(RouteName3) = (P2,reverse) .
+
+
+endtom)

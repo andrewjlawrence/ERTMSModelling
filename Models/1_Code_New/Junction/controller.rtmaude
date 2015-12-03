@@ -1,0 +1,24 @@
+
+(tomod CONTROLLER is protecting NAT-TIME-DOMAIN . 
+  protecting MSGS .
+  protecting CONTROLTABLE .
+  protecting SET{RouteName} * (sort Set{RouteName} to SetOfNRoutes,
+                               sort Elt{RouteName} to EltNRoutes ) .
+  
+  class Controller | routes : SetOfNRoutes,  counter : Nat .
+  
+  vars O1, O2 : Oid .
+  var RN : RouteName .
+  var SETRN1 : SetOfNRoutes .
+  var N : Nat .
+
+  eq mte(< O1 : Controller | >) = 1 .
+
+  rl [makereq] : delta(< O2 : Controller |  routes : ( RN , SETRN1), counter : 0  >) => routeset(randomRoute) < O2 : Controller | counter : 5 > .
+  crl [countdown] : delta(< O2 : Controller | counter : N   >) =>  < O2 : Controller | counter : (N monus 1) >  if not N == 0 .
+  
+endtom)
+
+*** Tests
+
+***(trew {< ctr1 : Controller | trainorder : (train2),  trainmax : (train1 |-> 5, train2 |-> 3), trainroute : (train1 |-> 1, train2 |-> 2) >} in time <= 1 .)

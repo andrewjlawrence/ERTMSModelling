@@ -1,0 +1,128 @@
+(tomod MODEL-CHECK-ERTMS8 is
+  including TIMED-MODEL-CHECKER .
+  protecting MAP{Oid,Nat}  * (sort Map{Oid,Nat} to MapON,
+                               sort Entry{Oid,Nat} to EntryON) .
+  protecting ERTMS8 .
+
+  ops train-cons train-acc train-stop train-brake : Oid -> Prop [ctor] .
+
+  vars O1,O2,O1',O2' : Oid .
+  vars N1,N2,N1',N2' : Nat .
+  var R : Time .
+  var B : Bool .
+  eq {REST < O1 : Train | state : acc >} |= train-acc(O1') = (O1 == O1') . 
+  eq {REST < O1 : Train | state : stop >} |= train-stop(O1') = (O1 == O1') .
+  eq {REST < O1 : Train | state : cons >} |= train-cons(O1') = (O1 == O1') . 
+  eq {REST < O1 : Train | state : brake >} |= train-brake(O1') = (O1 == O1') .
+   
+    
+  ops train-s train-d train-ma : Oid Nat -> Prop [ctor] .
+  op nomaoverlap : Oid Oid -> Prop [ctor] .
+  op noolap : Nat Nat Nat Nat -> Bool . 
+  ops lessdist, lessdist2 : Oid Oid -> Prop [ctor] .
+  op geqdist : Oid Oid -> Prop [ctor] .
+
+  
+  vars M1,M2,M1',M2',D1,D2,D1',D2' : Nat .
+***
+  ***eq noolap(D1,M1,D2,M2) = ((D1 <= M1) and (D2 <= M2)) implies (M1 < D2)
+
+eq noolap(D1,M1,D2,M2) = ((D1 <= M1) and (M1 < D2) and (D2 <= M2)) or ((D2 <= M2) and (M2 < D1) and (D1 <= M1)) or ((D1 <= M1) and (M2 < D1) and (M1 < D2)) or ((D2 <= M2) and (M1 < D2) and (M2 < D1) )  .    
+  
+  vars REST,REST2 : Configuration .
+  var OBJREST : ObjectConfiguration .
+  var P : Prop .
+  eq {REST < O1 : Train | speed : N1 >} |= train-s(O1',N1') = (N1 == N1') and (O1 == O1') .
+  eq {REST < O1 : Train | dist : N1 >} |= train-d(O1',N1') = (N1 == N1') and (O1 == O1') .
+  eq {REST < O1 : Train | ma : N1 >} |= train-ma(O1',N1') = (N1 == N1') and (O1 == O1') .
+ *** eq {REST < O1 : Train | ma : M1, dist : D1 > < O2 : Train | ma : M2, dist : D2 >} |= ma-overlap(O1',O2') = (O1 == O1') and (O2 == O2') and noolap(D1,M1,D2,M2) .   
+ 
+*** one train is behind another train 
+  eq {REST < O1 : Train |  dist : D1 > < O2 : Train |  dist : D2 >} |= lessdist(O1',O2') = (O1 == O1') and (O2 == O2') and (D1 < D2) . 
+*** 2 trains never crash formulated as train1 is behind train2 or train2 is behind train1
+  eq {REST < O1 : Train |  dist : D1 > < O2 : Train |  dist : D2 >} |= lessdist2(O1',O2') = (O1 == O1') and (O2 == O2') and ((D1 < D2) or (D2 < D1)) . 
+ 
+*** No overlapping movement authorities
+  eq {REST < O1 : Train |  dist : D1 , ma : M1 > < O2 : Train |  dist : D2 , ma : M2 >} |= nomaoverlap(O1',O2') = (O1 == O1') and (O2 == O2') and noolap(D1,M1,D2,M2) . 
+ 
+
+***  ceq {REST < O1 : Train |  dist : D1 > < O2 : Train |  dist : D2 >} |= lessdist(O1',O2') = false if D2 <= D1 and ((O1 == O1') and (O2 == O2')) .    eq {delta(REST) REST2} |= lessdist(O1',O2') = ({REST REST2} |= lessdist(O1',O2'))  . 
+
+***  ceq {REST < O1 : Train |  dist : D1 > < O2 : Train |  dist : D2 >} |= geqdist(O1',O2') = (O1 == O1') and (O2 == O2') if  D2 < D1  . 
+***  eq {OBJREST < O1 : Train |  dist : D1 > < O2 : Train |  dist : D2 >} |= geqdist(O1',O2') = false [owise] . 
+***  eq {} 
+
+  ops inter-t0 inter-t1 inter-t2 inter-t3 inter-t4 : Oid -> Prop [ctor] .
+  eq {REST < O1 : Inter | t0 : B >} |= inter-t0(O1') = B and (O1 == O1') .
+  
+
+*** Rewriting rules to deal with intermediate and initial states
+
+  eq {delta(REST)REST2} |= P = {REST REST2} |= P . 
+  eq {trackseg(REST)REST2} |= P = {REST REST2} |= P .
+  eq initialstate2 |= P = true .  
+  eq initialstate1 |= P = true .
+  eq {initialintstate REST} |= P = true .
+  eq {initialtrainstate1 REST} |= P = true .
+  eq {initialtrainstate2 REST} |= P = true .
+  eq {initialrbcstate1 REST} |= P = true .
+  eq {initialrbcstate2 REST} |= P = true .
+    
+
+***  eq {stopped-clock(R)} |= clock-is (R') = (R == R') .
+ 
+***  op timeIs : Time -> Prop [ctor] .
+***  var SYSTEM : System .
+***  eq {SYSTEM} in time R |= timeIs(R') = (R == R') .  
+  
+***  ops timeIsLessThan timeIsGreaterThan : Time -> Prop [ctor] .
+***  eq {SYSTEM} in time R |= timeIsLessThan(R') = (R lt R') .
+***  eq {SYSTEM} in time R |= timeIsGreaterThan(R') = (R' lt R) .   
+
+***  op clockEqualsTimeElapse : -> Prop [ctor] .
+***  eq {clock(R)} in time R' |= clockEqualsTimeElapse = (R == R') .
+
+***op train1 : -> Oid [ctor] .
+
+*** op inittrain : -> Configuration .
+*** rl [inittr] : inittrain => < train1 : Train | state : acc, dist : 0, speed : 0, ac : 1, ma : 100 > .
+
+
+endtom)
+
+*** [] : Globally
+*** <> : Finally
+
+*** it is never the case that the train travels at max speed + 1 (True).
+ 
+
+
+
+(mc initialstate2 |=t [] nomaoverlap(train1,train2) in time <= 30 .) 
+***(mc initialstate2 |=u [] nomaoverlap(train1,train2) .) 
+
+***
+***rewrites: 52130959 in 82884ms cpu (82881ms real) (628962 rewrites/second)
+***
+***Model check initialstate2 |=t[]nomaoverlap(train1,train2)in MODEL-CHECK-ERTMS8
+***    in time <= 30 with mode deterministic time increase
+***
+***Result Bool :
+***  true
+***
+***Maude> load modelcheckertms.rtmaude 
+***rewrites: 49887 in 92ms cpu (92ms real) (542250 rewrites/second)
+***Advisory: Module MODEL-CHECK-ERTMS8 redefined.
+***
+***Introduced timed module: MODEL-CHECK-ERTMS8
+***
+***rewrites: 50811007 in 100468ms cpu (100475ms real) (505743 rewrites/second)
+***
+***Model check initialstate2 |=t[]nomaoverlap(train1,train2)in MODEL-CHECK-ERTMS8
+***    in time <= 30 with mode deterministic time increase
+***
+***Result Bool :
+***  true
+
+
+

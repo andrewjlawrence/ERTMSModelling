@@ -1,0 +1,147 @@
+Modelling - new approach
+========================
+Topology - is new
+Control-table needs to be adapted accordingly, should essentially
+have clear table and releasetable  but no functions.
+========================
+
+Control table: 
+Route Normal Reverse Clear 
+R1A     P01          AA,AB,AC,AD 
+R1B            P01   AA,AB,BC,BD 
+R2             P02   BD, AE, AF 
+R3      P02          AD,AE,AF
+
+Add: Info on conflicting points.
+
+
+Release Tables:
+P01: R1A - AC
+     R1B - BC
+P02: R2 - AF
+     R3 - AF
+
+RBC - Table
+Route begin end   possible continuation routes
+R1A   0     1750  R3
+R1B   0     1750  R2
+R2    1750  3500  - 
+R3    1750  3500  -
+
+
+now changed to:
+Route begin              end   possible continuation routes?
+R1A   0                  AC  R3
+R1B   0                  BC  R2
+R2    1750(not needed)   AF  R4 
+R3    1750(not needed)   AF  R4
+R4                       Exit 
+
+
+the following is also in the article:
+
+
+
+
+
+Communication between Components:
+=======================
+Interlocking (instant behaviour, all are equations)
+=============================
+Attributes of an interlocking:
+RoutesSet Map {NamedRoutes->Bool}
+PointsLocked Map {Points -> Bool} [was RoutesLocked]
+PointsNormal Map {Point -> Bool}
+PointsReverse Map {Point -> Bool}
+TrackOccupation {Track -> Bool}
+\end{verbatim}
+
+
+\begin{verbatim}
+Message from controller (message: routename to be set).
+Case 1: route already set.
+        do nothing (i.e. message is deleted.)
+        Alternatives 1: it could doublecheck occupany and point settings.
+        Alternative 2: we could set it again. 
+
+
+Case 2: route not set and points are locking in conflicting 
+                          position or clearpart of route not free
+        do nothing.
+
+Case 3: route not set, check whether all segments in clear table are free and 
+              points are set correct or free to move, 
+              i.e. not locked (in conflicting pos.)
+ 
+        do: - set route (update map), 
+            - set points for this route (update map)
+            - message to RBC (send RouteSet map).
+          
+
+
+Message from Train: (message contains new occupied tracksegment)
+        do: - sets trackseg to be occupied, free up previous one.
+            - release: 
+              if new tracksegment is mentioned in releasetable 
+                 (part of control table)
+              remove Point from PointsLocked
+            - sends TrackOccupation map to RBC.
+               
+        Note there is a separate rule when trains leaves exit tracksegement
+        (message countains topological route).
+
+         
+
+
+
+          
+Message from RBC: (contains routename = request to proceed on a route)
+Case 1: route is still set:
+        do: - lock points on route.
+            - sent proceed message to RBC.
+ 
+Case 2: route not set anymore.
+             - do nothing.
+
+
+
+
+
+
+
+
+RBC:
+====
+SetRouteNames (subset of RouteNames)
+DesignatedRoutesMap: Map {Route -> Train}
+ [Here Route is a possible follow-up-route, and this map stores which train would go on this follow-up-route]
+
+
+
+Message from train (contains movement authority request:
+                    current track (!) + train id.)
+     do: computes from track, all possible follow-up routes.
+         checks whether there is one of them in RoutesSet (note: at most one!).
+
+         Case 1: there is none, delete MA request.
+         Case 2: there a suitable follow-up route in SetRoutes,
+                 update DesignatedRoutesMap (essentially stores TrainID)
+                 sends message request-to-procceed(RouteName) to IX 
+ 
+
+        
+Message from interlocking: proceed(RN)
+      
+      do       - compute eoA(RN)
+               - compute train from DesignatedRoutesMap
+               - send MA(RN) to train
+               - remove Route from DesignatedRoutesMap
+
+               
+    
+           
+
+Controller:
+==========
+Sends Message: Routerequest (random route), every 10 time steps (can be made random)
+

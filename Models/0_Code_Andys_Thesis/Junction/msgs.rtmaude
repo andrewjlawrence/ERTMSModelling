@@ -1,0 +1,54 @@
+(view Oid from TRIV to CONFIGURATION is
+    sort Elt to Oid .
+endv)
+
+
+(tomod MSGS is protecting NAT-TIME-DOMAIN .
+   
+    *** these messages are used to communicate between the RBC and the interlocking.
+       msgs req grant deny routereq routegrant routedeny leave : Nat -> Msg .
+ 
+    *** these messages are used to communicate between the train and the interlocking.
+       msgs trans : Nat -> Msg . 
+
+    *** these messages are used to communicate between the train and the RBC
+    *** The train can request a movement authority from the RBC. 
+       msgs reqma  : Oid -> Msg .
+    
+    *** A join resquest consists of a trainid and a route
+       msgs reqjoin : Oid Nat -> Msg .
+
+    *** The RBC can grant a movement authority
+       msgs grantma pos  : Oid Nat -> Msg .
+       
+       var N : Nat .
+       var P : NzNat .       
+   
+       op _div_ : Nat NzNat -> Nat .  
+       
+       ceq N div P = 0 if P > N .
+       ceq N div P = s((N monus P) div P) if P <= N .  
+ 
+       ops train1 train2 inter1 rbc1 ctr1 : -> Oid [ctor] .
+
+       --- We define 2 constants; the max speed of a train and the track length.
+       ops tlength tseglength numtseg : -> Nat .
+       
+       eq tlength = 250 .
+       eq tseglength = 50 .
+       eq numtseg = 5 .
+
+
+       vars REST,CURRENT : Configuration .
+       var OCURRENT : ObjectConfiguration .
+       vars CON1,CON2 : NEConfiguration .
+       var MSG1 : Msg .
+
+       op delta : Configuration -> Configuration [frozen]  . 
+       rl [delta0] : {OCURRENT} => {delta(OCURRENT)} in time 1 .
+       rl [delta1] : delta(CON1 CON2) => delta(CON1)delta(CON2) .
+***       rl [delta2] : delta(MSG1) => MSG1 . 
+
+       op nondelta : Configuration -> Configuration .
+
+endtom)

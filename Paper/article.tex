@@ -1,0 +1,71 @@
+\documentclass[review]{elsarticle}
+
+\usepackage{%lineno,
+hyperref}
+%\modulolinenumbers[5]
+
+\journal{Journal of \LaTeX\ Templates}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% `Elsevier LaTeX' style
+\bibliographystyle{elsarticle-num}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Modelling and Analysing the European Rail Traffic Management System in Real-Time Maude}
+
+
+%% Group authors per affiliation:
+
+\author[swanaddress]{Ulrich Berger}
+\author[swanaddress]{Phillip James}
+\author[southaddress]{Andrew Lawrence}
+\author[swanaddress]{Markus Roggenbach}
+\author[swanaddress]{Monika Seisenberger}
+
+\address[swanaddress]{Department of Computer Science, Swansea University, UK.}
+\address[southaddress]{Hitachi Data Systems, Poole, UK.}
+
+
+
+\begin{abstract}
+To be added.
+\end{abstract}
+
+\begin{keyword}
+To be added.
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+\input{introduction.tex}
+
+\section{ERTMS}
+\input{ertms.tex}
+...
+
+\section{Modelling in Maude}
+\subsection{Maude/Real-Time-Maude}
+\subsection{Modelling}
+\subsection{Discussion of Completeness}
+
+\section{Validation in ERTMS Context}
+
+\section{Modellchecking and Simulation Results}
+
+\section{Related Work}
+%%%\section*{References}
+
+\bibliography{doc}
+
+\end{document}
